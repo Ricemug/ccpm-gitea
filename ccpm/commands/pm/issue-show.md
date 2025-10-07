@@ -13,10 +13,21 @@ Display issue and sub-issues with detailed information.
 
 ## Instructions
 
-You are displaying comprehensive information about a GitHub issue and related sub-issues for: **Issue #$ARGUMENTS**
+You are displaying comprehensive information about a forge issue and related sub-issues for: **Issue #$ARGUMENTS**
+
+### 0. Initialize Forge Abstraction
+
+```bash
+source .claude/scripts/forge/config.sh
+forge_init || exit 1
+```
 
 ### 1. Fetch Issue Data
-- Use `gh issue view #$ARGUMENTS` to get GitHub issue details
+- Use forge abstraction to get issue details:
+  ```bash
+  source .claude/scripts/forge/issue-list.sh
+  forge_issue_list --state all | grep -A 15 "index: $ARGUMENTS"
+  ```
 - Look for local task file: first check `.claude/epics/*/$ARGUMENTS.md` (new naming)
 - If not found, search for file with `github:.*issues/$ARGUMENTS` in frontmatter (old naming)
 - Check for related issues and sub-tasks
@@ -55,13 +66,13 @@ Show related issues:
 ```
 
 ### 5. Recent Activity
-Display recent comments and updates:
+Display recent comments and updates from forge:
 ```
 💬 Recent Activity:
    {timestamp} - {author}: {comment_preview}
    {timestamp} - {author}: {comment_preview}
-   
-   View full thread: gh issue view #$ARGUMENTS --comments
+
+   View in forge issue tracker
 ```
 
 ### 6. Progress Tracking
@@ -79,13 +90,17 @@ If task file exists, show progress:
 🚀 Quick Actions:
    Start work: /pm:issue-start $ARGUMENTS
    Sync updates: /pm:issue-sync $ARGUMENTS
-   Add comment: gh issue comment #$ARGUMENTS --body "your comment"
-   View in browser: gh issue view #$ARGUMENTS --web
+   Add comment via forge abstraction
+   View in forge web UI
 ```
 
 ### 8. Error Handling
 - Handle invalid issue numbers gracefully
 - Check for network/authentication issues
 - Provide helpful error messages and alternatives
+
+## Important Notes
+
+Follow `/rules/forge-operations.md` for forge abstraction usage.
 
 Provide comprehensive issue information to help developers understand context and current status for Issue #$ARGUMENTS.

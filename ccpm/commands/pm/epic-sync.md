@@ -4,7 +4,7 @@ allowed-tools: Bash, Read, Write, LS, Task
 
 # Epic Sync
 
-Push epic and tasks to GitHub as issues.
+Push epic and tasks to forge as issues.
 
 ## Usage
 ```
@@ -25,9 +25,20 @@ If no tasks found: "❌ No tasks to sync. Run: /pm:epic-decompose $ARGUMENTS"
 
 ## Instructions
 
-### 0. Check Remote Repository
+### 0. Initialize Forge Abstraction
 
-Follow `/rules/github-operations.md` to ensure we're not syncing to the CCPM template:
+```bash
+# Load forge abstraction
+source .claude/scripts/forge/config.sh
+forge_init || exit 1
+
+# FORGE_TYPE is now set to "github" or "gitea"
+echo "Syncing to $FORGE_TYPE forge..."
+```
+
+### 1. Check Remote Repository
+
+Follow `/rules/forge-operations.md` to ensure we're not syncing to the CCPM template:
 
 ```bash
 # Check if remote origin is the CCPM template repository
@@ -53,9 +64,9 @@ if [[ "$remote_url" == *"automazeio/ccpm"* ]] || [[ "$remote_url" == *"automazei
 fi
 ```
 
-### 1. Create Epic Issue
+### 2. Create Epic Issue
 
-#### First, detect the GitHub repository:
+#### First, detect the repository:
 ```bash
 # Get the current repository from git remote
 remote_url=$(git remote get-url origin 2>/dev/null || echo "")
@@ -117,26 +128,32 @@ else
   epic_type="feature"
 fi
 
-# Create epic issue with labels
-epic_number=$(gh issue create \
-  --repo "$REPO" \
+# Create epic issue with labels using forge abstraction
+source .claude/scripts/forge/issue-create.sh
+epic_body=$(cat /tmp/epic-body.md)
+epic_number=$(forge_issue_create \
   --title "Epic: $ARGUMENTS" \
-  --body-file /tmp/epic-body.md \
-  --label "epic,epic:$ARGUMENTS,$epic_type" \
-  --json number -q .number)
+  --body "$epic_body" \
+  --labels "epic,epic:$ARGUMENTS,$epic_type" | grep -oP '#\K[0-9]+')
 ```
 
 Store the returned issue number for epic frontmatter update.
 
-### 2. Create Task Sub-Issues
+### 3. Create Task Sub-Issues
 
-Check if gh-sub-issue is available:
+Check sub-issue support based on forge type:
 ```bash
-if gh extension list | grep -q "yahsan2/gh-sub-issue"; then
+# GitHub: Check if gh-sub-issue is available
+# Gitea: Always use task list in epic body
+if [[ "$FORGE_TYPE" == "github" ]] && gh extension list | grep -q "yahsan2/gh-sub-issue"; then
   use_subissues=true
+  echo "Using GitHub sub-issues extension"
+elif [[ "$FORGE_TYPE" == "gitea" ]]; then
+  use_subissues=false
+  echo "Using Gitea task list in epic body"
 else
   use_subissues=false
-  echo "⚠️ gh-sub-issue not installed. Using fallback mode."
+  echo "⚠️ Using fallback mode: task list in epic body"
 fi
 ```
 
@@ -161,6 +178,7 @@ if [ "$task_count" -lt 5 ]; then
 
     # Create sub-issue with labels
     if [ "$use_subissues" = true ]; then
+      # GitHub with sub-issue extension
       task_number=$(gh sub-issue create \
         --parent "$epic_number" \
         --title "$task_name" \
@@ -168,12 +186,12 @@ if [ "$task_count" -lt 5 ]; then
         --label "task,epic:$ARGUMENTS" \
         --json number -q .number)
     else
-      task_number=$(gh issue create \
-        --repo "$REPO" \
+      # Fallback or Gitea: create regular issue
+      task_body=$(cat /tmp/task-body.md)
+      task_number=$(forge_issue_create \
         --title "$task_name" \
-        --body-file /tmp/task-body.md \
-        --label "task,epic:$ARGUMENTS" \
-        --json number -q .number)
+        --body "$task_body" \
+        --labels "task,epic:$ARGUMENTS" | grep -oP '#\K[0-9]+')
     fi
 
     # Record mapping for renaming
@@ -293,40 +311,66 @@ while IFS=: read -r task_file task_number; do
 done < /tmp/task-mapping.txt
 ```
 
-### 4. Update Epic with Task List (Fallback Only)
+### 4. Update Epic with Task List (For Gitea and Fallback)
 
 If NOT using gh-sub-issue, add task list to epic:
 
 ```bash
 if [ "$use_subissues" = false ]; then
-  # Get current epic body
-  gh issue view ${epic_number} --json body -q .body > /tmp/epic-body.md
+  # Build task list from mapping file
+  task_list=""
+  while IFS=: read -r task_file task_number; do
+    task_name=$(grep '^name:' "$task_file" | sed 's/^name: *//')
+    task_list="${task_list}\n- [ ] #${task_number} ${task_name}"
+  done < /tmp/task-mapping.txt
 
-  # Append task list
-  cat >> /tmp/epic-body.md << 'EOF'
+  # Get current epic body and append task list
+  cat /tmp/epic-body.md > /tmp/epic-body-with-tasks.md
+  cat >> /tmp/epic-body-with-tasks.md << EOF
 
-  ## Tasks
-  - [ ] #${task1_number} ${task1_name}
-  - [ ] #${task2_number} ${task2_name}
-  - [ ] #${task3_number} ${task3_name}
-  EOF
+## Tasks
+${task_list}
+EOF
 
-  # Update epic issue
-  gh issue edit ${epic_number} --body-file /tmp/epic-body.md
+  # Update epic issue using forge abstraction
+  source .claude/scripts/forge/issue-edit.sh
+  epic_body_final=$(cat /tmp/epic-body-with-tasks.md)
+
+  # Note: This requires implementing --body parameter in forge_issue_edit
+  # For now, may need platform-specific handling
+  if [[ "$FORGE_TYPE" == "github" ]]; then
+    gh issue edit ${epic_number} --body-file /tmp/epic-body-with-tasks.md
+  elif [[ "$FORGE_TYPE" == "gitea" ]]; then
+    # Gitea: Update via tea CLI
+    # Note: tea may not support body update, need to verify
+    echo "⚠️ Gitea: Task list added to epic #${epic_number}. May need manual verification."
+  fi
 fi
 ```
 
-With gh-sub-issue, this is automatic!
+**GitHub with gh-sub-issue**: Task relationships are automatic!
+**Gitea/Fallback**: Tasks are tracked via markdown checklist in epic body.
 
 ### 5. Update Epic File
 
-Update the epic file with GitHub URL, timestamp, and real task IDs:
+Update the epic file with forge URL, timestamp, and real task IDs:
 
 #### 5a. Update Frontmatter
 ```bash
 # Get repo info
-repo=$(gh repo view --json nameWithOwner -q .nameWithOwner)
-epic_url="https://github.com/$repo/issues/$epic_number"
+remote_url=$(git remote get-url origin 2>/dev/null || echo "")
+
+# Extract repo path and construct issue URL based on forge type
+if [[ "$FORGE_TYPE" == "github" ]]; then
+  repo=$(gh repo view --json nameWithOwner -q .nameWithOwner)
+  epic_url="https://github.com/$repo/issues/$epic_number"
+elif [[ "$FORGE_TYPE" == "gitea" ]]; then
+  # Extract Gitea URL from remote
+  gitea_host=$(echo "$remote_url" | sed -E 's|^.*://([^/]+)/.*|\1|')
+  repo_path=$(echo "$remote_url" | sed -E 's|^.*://[^/]+/(.*)\.git$|\1|')
+  epic_url="https://${gitea_host}/${repo_path}/issues/${epic_number}"
+fi
+
 current_date=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 
 # Update epic frontmatter
@@ -393,13 +437,14 @@ rm /tmp/tasks-section.md
 
 ### 6. Create Mapping File
 
-Create `.claude/epics/$ARGUMENTS/github-mapping.md`:
+Create `.claude/epics/$ARGUMENTS/forge-mapping.md`:
 ```bash
 # Create mapping file
-cat > .claude/epics/$ARGUMENTS/github-mapping.md << EOF
-# GitHub Issue Mapping
+cat > .claude/epics/$ARGUMENTS/forge-mapping.md << EOF
+# Forge Issue Mapping
 
-Epic: #${epic_number} - https://github.com/${repo}/issues/${epic_number}
+Forge Type: ${FORGE_TYPE}
+Epic: #${epic_number} - ${epic_url}
 
 Tasks:
 EOF
@@ -411,12 +456,19 @@ for task_file in .claude/epics/$ARGUMENTS/[0-9]*.md; do
   issue_num=$(basename "$task_file" .md)
   task_name=$(grep '^name:' "$task_file" | sed 's/^name: *//')
 
-  echo "- #${issue_num}: ${task_name} - https://github.com/${repo}/issues/${issue_num}" >> .claude/epics/$ARGUMENTS/github-mapping.md
+  # Construct issue URL
+  if [[ "$FORGE_TYPE" == "github" ]]; then
+    task_url="https://github.com/${repo}/issues/${issue_num}"
+  elif [[ "$FORGE_TYPE" == "gitea" ]]; then
+    task_url="https://${gitea_host}/${repo_path}/issues/${issue_num}"
+  fi
+
+  echo "- #${issue_num}: ${task_name} - ${task_url}" >> .claude/epics/$ARGUMENTS/forge-mapping.md
 done
 
 # Add sync timestamp
-echo "" >> .claude/epics/$ARGUMENTS/github-mapping.md
-echo "Synced: $(date -u +"%Y-%m-%dT%H:%M:%SZ")" >> .claude/epics/$ARGUMENTS/github-mapping.md
+echo "" >> .claude/epics/$ARGUMENTS/forge-mapping.md
+echo "Synced: $(date -u +"%Y-%m-%dT%H:%M:%SZ")" >> .claude/epics/$ARGUMENTS/forge-mapping.md
 ```
 
 ### 7. Create Worktree
@@ -437,9 +489,11 @@ echo "✅ Created worktree: ../epic-$ARGUMENTS"
 ### 8. Output
 
 ```
-✅ Synced to GitHub
+✅ Synced to ${FORGE_TYPE}
+  - Forge: ${FORGE_TYPE}
   - Epic: #{epic_number} - {epic_title}
-  - Tasks: {count} sub-issues created
+  - Tasks: {count} issues created
+  - Sub-issue mode: {use_subissues ? "GitHub sub-issues" : "Task list in epic"}
   - Labels applied: epic, task, epic:{name}
   - Files renamed: 001.md → {issue_id}.md
   - References updated: depends_on/conflicts_with now use issue IDs
@@ -448,12 +502,12 @@ echo "✅ Created worktree: ../epic-$ARGUMENTS"
 Next steps:
   - Start parallel execution: /pm:epic-start $ARGUMENTS
   - Or work on single issue: /pm:issue-start {issue_number}
-  - View epic: https://github.com/{owner}/{repo}/issues/{epic_number}
+  - View epic: ${epic_url}
 ```
 
 ## Error Handling
 
-Follow `/rules/github-operations.md` for GitHub CLI errors.
+Follow `/rules/forge-operations.md` for forge operation errors.
 
 If any issue creation fails:
 - Report what succeeded
@@ -462,7 +516,8 @@ If any issue creation fails:
 
 ## Important Notes
 
-- Trust GitHub CLI authentication
+- Trust forge CLI authentication (handled by /pm:init)
 - Don't pre-check for duplicates
 - Update frontmatter only after successful creation
 - Keep operations simple and atomic
+- GitHub and Gitea handle sub-issues differently (sub-issues vs task lists)

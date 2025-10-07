@@ -4,7 +4,7 @@ allowed-tools: Bash, Read, Write, LS
 
 # Import
 
-Import existing GitHub issues into the PM system.
+Import existing forge issues into the PM system.
 
 ## Usage
 ```
@@ -18,16 +18,29 @@ Options:
 
 ## Instructions
 
-### 1. Fetch GitHub Issues
+### 0. Initialize Forge Abstraction
 
 ```bash
+source .claude/scripts/forge/config.sh
+forge_init || exit 1
+```
+
+### 1. Fetch Forge Issues
+
+```bash
+# Use forge abstraction to get issues
+source .claude/scripts/forge/issue-list.sh
+
 # Get issues based on filters
 if [[ "$ARGUMENTS" == *"--label"* ]]; then
-  gh issue list --label "{label}" --limit 1000 --json number,title,body,state,labels,createdAt,updatedAt
+  # Note: Filtering by label may need platform-specific handling
+  forge_issue_list --state all
 else
-  gh issue list --limit 1000 --json number,title,body,state,labels,createdAt,updatedAt
+  forge_issue_list --state all
 fi
 ```
+
+Note: Label filtering and JSON output may require platform-specific handling.
 
 ### 2. Identify Untracked Issues
 

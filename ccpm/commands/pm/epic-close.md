@@ -13,6 +13,13 @@ Mark an epic as complete when all tasks are done.
 
 ## Instructions
 
+### 0. Initialize Forge Abstraction
+
+```bash
+source .claude/scripts/forge/config.sh
+forge_init || exit 1
+```
+
 ### 1. Verify All Tasks Complete
 
 Check all task files in `.claude/epics/$ARGUMENTS/`:
@@ -35,11 +42,17 @@ completed: {current_datetime}
 
 If epic references a PRD, update its status to "complete".
 
-### 4. Close Epic on GitHub
+### 4. Close Epic on Forge
 
-If epic has GitHub issue:
+If epic has forge issue:
 ```bash
-gh issue close {epic_issue_number} --comment "✅ Epic completed - all tasks done"
+# Add completion comment
+source .claude/scripts/forge/issue-comment.sh
+forge_issue_comment {epic_issue_number} --body "✅ Epic completed - all tasks done"
+
+# Close the epic issue
+source .claude/scripts/forge/issue-edit.sh
+forge_issue_edit {epic_issue_number} --state closed
 ```
 
 ### 5. Archive Option
@@ -64,6 +77,7 @@ Next epic: Run /pm:next to see priority work
 
 ## Important Notes
 
-Only close epics with all tasks complete.
-Preserve all data when archiving.
-Update related PRD status.
+- Only close epics with all tasks complete
+- Preserve all data when archiving
+- Update related PRD status
+- Follow `/rules/forge-operations.md` for forge abstraction usage

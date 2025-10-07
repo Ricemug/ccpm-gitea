@@ -4,7 +4,7 @@ allowed-tools: Bash, Read, Write, LS
 
 # Issue Sync
 
-Push local updates as GitHub issue comments for transparent audit trail.
+Push local updates as forge issue comments for transparent audit trail.
 
 ## Usage
 ```
@@ -21,45 +21,50 @@ Push local updates as GitHub issue comments for transparent audit trail.
 Before proceeding, complete these validation steps.
 Do not bother the user with preflight checks progress ("I'm not going to ..."). Just do them and move on.
 
-0. **Repository Protection Check:**
-   Follow `/rules/github-operations.md` - check remote origin:
+0. **Repository Protection & Forge Initialization:**
+   Follow `/rules/forge-operations.md` - check remote and initialize forge:
    ```bash
+   # Check remote origin
    remote_url=$(git remote get-url origin 2>/dev/null || echo "")
    if [[ "$remote_url" == *"automazeio/ccpm"* ]]; then
      echo "❌ ERROR: Cannot sync to CCPM template repository!"
-     echo "Update your remote: git remote set-url origin https://github.com/YOUR_USERNAME/YOUR_REPO.git"
+     echo "Update your remote: git remote set-url origin <your-repo-url>"
      exit 1
    fi
+
+   # Initialize forge abstraction
+   source .claude/scripts/forge/config.sh
+   forge_init || exit 1
    ```
 
-1. **GitHub Authentication:**
-   - Run: `gh auth status`
-   - If not authenticated, tell user: "❌ GitHub CLI not authenticated. Run: gh auth login"
-
-2. **Issue Validation:**
-   - Run: `gh issue view $ARGUMENTS --json state`
+1. **Issue Validation:**
+   - Use forge abstraction to check issue:
+   ```bash
+   source .claude/scripts/forge/issue-list.sh
+   issue_data=$(forge_issue_list --state all | grep -A 5 "index: $ARGUMENTS")
+   ```
    - If issue doesn't exist, tell user: "❌ Issue #$ARGUMENTS not found"
    - If issue is closed and completion < 100%, warn: "⚠️ Issue is closed but work incomplete"
 
-3. **Local Updates Check:**
+2. **Local Updates Check:**
    - Check if `.claude/epics/*/updates/$ARGUMENTS/` directory exists
    - If not found, tell user: "❌ No local updates found for issue #$ARGUMENTS. Run: /pm:issue-start $ARGUMENTS"
    - Check if progress.md exists
    - If not, tell user: "❌ No progress tracking found. Initialize with: /pm:issue-start $ARGUMENTS"
 
-4. **Check Last Sync:**
+3. **Check Last Sync:**
    - Read `last_sync` from progress.md frontmatter
    - If synced recently (< 5 minutes), ask: "⚠️ Recently synced. Force sync anyway? (yes/no)"
    - Calculate what's new since last sync
 
-5. **Verify Changes:**
+4. **Verify Changes:**
    - Check if there are actual updates to sync
    - If no changes, tell user: "ℹ️ No new updates to sync since {last_sync}"
    - Exit gracefully if nothing to sync
 
 ## Instructions
 
-You are synchronizing local development progress to GitHub as issue comments for: **Issue #$ARGUMENTS**
+You are synchronizing local development progress to forge as issue comments for: **Issue #$ARGUMENTS**
 
 ### 1. Gather Local Updates
 Collect all local updates for the issue:
@@ -123,10 +128,12 @@ Create comprehensive update comment:
 *Progress: {completion}% | Synced from local updates at {timestamp}*
 ```
 
-### 5. Post to GitHub
-Use GitHub CLI to add comment:
+### 5. Post to Forge
+Use forge abstraction to add comment:
 ```bash
-gh issue comment #$ARGUMENTS --body-file {temp_comment_file}
+source .claude/scripts/forge/issue-comment.sh
+comment_body=$(cat {temp_comment_file})
+forge_issue_comment $ARGUMENTS --body "$comment_body"
 ```
 
 ### 6. Update Local Task File
@@ -210,7 +217,7 @@ This task is ready for review and can be closed.
 
 ### 9. Output Summary
 ```
-☁️ Synced updates to GitHub Issue #$ARGUMENTS
+☁️ Synced updates to ${FORGE_TYPE} Issue #$ARGUMENTS
 
 📝 Update summary:
    Progress items: {progress_count}
@@ -222,7 +229,7 @@ This task is ready for review and can be closed.
    Epic progress: {epic_progress}%
    Completed criteria: {completed}/{total}
 
-🔗 View update: gh issue view #$ARGUMENTS --comments
+🔗 View update in forge issue tracker
 ```
 
 ### 10. Frontmatter Maintenance
@@ -260,13 +267,14 @@ This task is ready for review and can be closed.
    - Keep local updates intact for retry
 
 2. **Rate Limit:**
-   - Message: "❌ GitHub rate limit exceeded"
+   - Message: "❌ Forge rate limit exceeded"
    - Solution: "Wait {minutes} minutes or use different token"
    - Save comment locally for later sync
 
 3. **Permission Denied:**
    - Message: "❌ Cannot comment on issue (permission denied)"
    - Solution: "Check repository access permissions"
+   - Action: "Run /pm:init to verify authentication"
 
 4. **Issue Locked:**
    - Message: "⚠️ Issue is locked for comments"
@@ -284,9 +292,13 @@ When updating epic progress:
 ### 15. Post-Sync Validation
 
 After successful sync:
-- [ ] Verify comment posted on GitHub
+- [ ] Verify comment posted on forge
 - [ ] Confirm frontmatter updated with sync timestamp
 - [ ] Check epic progress updated if task completed
 - [ ] Validate no data corruption in local files
+
+## Important Notes
+
+Follow `/rules/forge-operations.md` for forge abstraction usage.
 
 This creates a transparent audit trail of development progress that stakeholders can follow in real-time for Issue #$ARGUMENTS, while maintaining accurate frontmatter across all project files.

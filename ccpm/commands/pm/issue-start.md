@@ -4,7 +4,7 @@ allowed-tools: Bash, Read, Write, LS, Task
 
 # Issue Start
 
-Begin work on a GitHub issue with parallel agents based on work stream analysis.
+Begin work on an issue with parallel agents based on work stream analysis.
 
 ## Usage
 ```
@@ -13,18 +13,45 @@ Begin work on a GitHub issue with parallel agents based on work stream analysis.
 
 ## Quick Check
 
-1. **Get issue details:**
+0. **Repository Protection:**
    ```bash
-   gh issue view $ARGUMENTS --json state,title,labels,body
+   # Check if remote origin is the CCPM template repository
+   remote_url=$(git remote get-url origin 2>/dev/null || echo "")
+   if [[ "$remote_url" == *"automazeio/ccpm"* ]] || [[ "$remote_url" == *"automazeio/ccpm.git"* ]]; then
+     echo "❌ ERROR: You're trying to sync with the CCPM template repository!"
+     echo ""
+     echo "This repository (automazeio/ccpm) is a template for others to use."
+     echo "You should NOT create issues or PRs here."
+     echo ""
+     echo "To fix this:"
+     echo "  1. Fork this repository to your own account"
+     echo "  2. Update your remote origin:"
+     echo "     git remote set-url origin <your-repo-url>"
+     echo ""
+     echo "Current remote: $remote_url"
+     exit 1
+   fi
    ```
-   If it fails: "❌ Cannot access issue #$ARGUMENTS. Check number or run: gh auth login"
 
-2. **Find local task file:**
+1. **Initialize forge abstraction:**
+   ```bash
+   source .claude/scripts/forge/config.sh
+   forge_init || exit 1
+   ```
+
+2. **Get issue details:**
+   ```bash
+   source .claude/scripts/forge/issue-list.sh
+   forge_issue_list --state all | grep "index: $ARGUMENTS" || echo "❌ Cannot access issue #$ARGUMENTS. Check number or authentication."
+   ```
+   If it fails: "❌ Cannot access issue #$ARGUMENTS. Run /pm:init to configure authentication."
+
+3. **Find local task file:**
    - First check if `.claude/epics/*/$ARGUMENTS.md` exists (new naming)
    - If not found, search for file containing `github:.*issues/$ARGUMENTS` in frontmatter (old naming)
    - If not found: "❌ No local task for issue #$ARGUMENTS. This issue may have been created outside the PM system."
 
-3. **Check for analysis:**
+4. **Check for analysis:**
    ```bash
    test -f .claude/epics/*/$ARGUMENTS-analysis.md || echo "❌ No analysis found for issue #$ARGUMENTS
    
@@ -123,11 +150,16 @@ Task:
     Complete your stream's work and mark as completed when done.
 ```
 
-### 5. GitHub Assignment
+### 5. Issue Assignment
 
 ```bash
 # Assign to self and mark in-progress
-gh issue edit $ARGUMENTS --add-assignee @me --add-label "in-progress"
+source .claude/scripts/forge/issue-edit.sh
+forge_issue_edit $ARGUMENTS --add-labels "in-progress"
+
+# Note: Assignee functionality depends on forge type
+# GitHub: supports --add-assignee @me
+# Gitea: may require manual assignment through web UI
 ```
 
 ### 6. Output
@@ -159,5 +191,6 @@ If any step fails, report clearly:
 
 ## Important Notes
 
-Follow `/rules/datetime.md` for timestamps.
-Keep it simple - trust that GitHub and file system work.
+- Follow `/rules/datetime.md` for timestamps
+- Follow `/rules/forge-operations.md` for forge abstraction usage
+- Keep it simple - trust that forge operations work

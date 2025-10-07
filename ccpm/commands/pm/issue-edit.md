@@ -4,7 +4,7 @@ allowed-tools: Bash, Read, Write, LS
 
 # Issue Edit
 
-Edit issue details locally and on GitHub.
+Edit issue details locally and on forge.
 
 ## Usage
 ```
@@ -13,11 +13,19 @@ Edit issue details locally and on GitHub.
 
 ## Instructions
 
+### 0. Initialize Forge Abstraction
+
+```bash
+source .claude/scripts/forge/config.sh
+forge_init || exit 1
+```
+
 ### 1. Get Current Issue State
 
 ```bash
-# Get from GitHub
-gh issue view $ARGUMENTS --json title,body,labels
+# Get from forge using abstraction
+source .claude/scripts/forge/issue-list.sh
+forge_issue_list --state all | grep -A 10 "index: $ARGUMENTS"
 
 # Find local task file
 # Search for file with github:.*issues/$ARGUMENTS
@@ -41,36 +49,40 @@ Update task file with changes:
 - Update body content if description changed
 - Update `updated` field with current datetime
 
-### 4. Update GitHub
+### 4. Update Forge
 
-If title changed:
+Use forge abstraction for updates:
+
+If title or labels changed:
 ```bash
-gh issue edit $ARGUMENTS --title "{new_title}"
+source .claude/scripts/forge/issue-edit.sh
+
+# Update title
+[ -n "{new_title}" ] && forge_issue_edit $ARGUMENTS --title "{new_title}"
+
+# Update labels
+[ -n "{new_labels}" ] && forge_issue_edit $ARGUMENTS --add-labels "{new_labels}"
 ```
 
-If body changed:
-```bash
-gh issue edit $ARGUMENTS --body-file {updated_task_file}
-```
-
-If labels changed:
-```bash
-gh issue edit $ARGUMENTS --add-label "{new_labels}"
-gh issue edit $ARGUMENTS --remove-label "{removed_labels}"
-```
+Note: Body updates require platform-specific handling.
+For critical body updates, use native CLI:
+- GitHub: `gh issue edit $ARGUMENTS --body-file {file}`
+- Gitea: May require manual update via web UI
 
 ### 5. Output
 
 ```
 ✅ Updated issue #$ARGUMENTS
+  Forge: ${FORGE_TYPE}
   Changes:
     {list_of_changes_made}
-  
-Synced to GitHub: ✅
+
+Synced to forge: ✅
 ```
 
 ## Important Notes
 
-Always update local first, then GitHub.
-Preserve frontmatter fields not being edited.
-Follow `/rules/frontmatter-operations.md`.
+- Always update local first, then forge
+- Preserve frontmatter fields not being edited
+- Follow `/rules/frontmatter-operations.md`
+- Follow `/rules/forge-operations.md`

@@ -13,6 +13,13 @@ Reopen a closed issue.
 
 ## Instructions
 
+### 0. Initialize Forge Abstraction
+
+```bash
+source .claude/scripts/forge/config.sh
+forge_init || exit 1
+```
+
 ### 1. Find Local Task File
 
 Search for task file with `github:.*issues/$ARGUMENTS` in frontmatter.
@@ -35,19 +42,22 @@ If progress file exists:
 - Reset completion to previous value or 0%
 - Add note about reopening with reason
 
-### 4. Reopen on GitHub
+### 4. Reopen on Forge
 
 ```bash
-# Reopen with comment
-echo "🔄 Reopening issue
+# Add comment about reopening
+source .claude/scripts/forge/issue-comment.sh
+comment_body="🔄 Reopening issue
 
 Reason: $ARGUMENTS
 
 ---
-Reopened at: {timestamp}" | gh issue comment $ARGUMENTS --body-file -
+Reopened at: {timestamp}"
+forge_issue_comment $ARGUMENTS --body "$comment_body"
 
 # Reopen the issue
-gh issue reopen $ARGUMENTS
+source .claude/scripts/forge/issue-edit.sh
+forge_issue_edit $ARGUMENTS --state open
 ```
 
 ### 5. Update Epic Progress
@@ -66,5 +76,6 @@ Start work with: /pm:issue-start $ARGUMENTS
 
 ## Important Notes
 
-Preserve work history in progress files.
-Don't delete previous progress, just reset status.
+- Preserve work history in progress files
+- Don't delete previous progress, just reset status
+- Follow `/rules/forge-operations.md`

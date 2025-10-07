@@ -24,6 +24,13 @@ Merge completed epic from worktree back to main branch.
 
 ## Instructions
 
+### 0. Initialize Forge Abstraction
+
+```bash
+source .claude/scripts/forge/config.sh
+forge_init || exit 1
+```
+
 ### 1. Pre-Merge Validation
 
 Navigate to worktree and check status:
@@ -186,8 +193,12 @@ else
   epic_issue=""
 fi
 
-# Close epic issue
-gh issue close $epic_issue -c "Epic completed and merged to main"
+# Close epic issue using forge abstraction
+source .claude/scripts/forge/issue-comment.sh
+source .claude/scripts/forge/issue-edit.sh
+
+forge_issue_comment $epic_issue --body "Epic completed and merged to main"
+forge_issue_edit $epic_issue --state closed
 
 # Close task issues
 for task_file in .claude/epics/archived/$ARGUMENTS/[0-9]*.md; do
@@ -200,7 +211,8 @@ for task_file in .claude/epics/archived/$ARGUMENTS/[0-9]*.md; do
     issue_num=""
   fi
   if [ ! -z "$issue_num" ]; then
-    gh issue close $issue_num -c "Completed in epic merge"
+    forge_issue_comment $issue_num --body "Completed in epic merge"
+    forge_issue_edit $issue_num --state closed
   fi
 done
 ```

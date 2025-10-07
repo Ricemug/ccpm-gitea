@@ -25,11 +25,19 @@ Analyze an issue to identify parallel work streams for maximum efficiency.
 
 ## Instructions
 
+### 0. Initialize Forge Abstraction
+
+```bash
+source .claude/scripts/forge/config.sh
+forge_init || exit 1
+```
+
 ### 1. Read Issue Context
 
-Get issue details from GitHub:
+Get issue details from forge:
 ```bash
-gh issue view $ARGUMENTS --json title,body,labels
+source .claude/scripts/forge/issue-list.sh
+forge_issue_list --state all | grep -A 10 "index: $ARGUMENTS"
 ```
 
 Read local task file to understand:
