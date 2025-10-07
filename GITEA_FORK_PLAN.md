@@ -1,38 +1,38 @@
-# CCPM Gitea Fork 開發計劃
+# CCPM Gitea Fork Development Plan
 
-**日期**: 2025-10-07
-**目標**: 建立通用版本，同時支援 GitHub 和 Gitea
+**Date**: 2025-10-07
+**Goal**: Build a universal version supporting both GitHub and Gitea
 
-## 決策摘要
+## Decision Summary
 
-### 選擇方案：選項 B - 建立通用版本 ✅
+### Selected Approach: Option B - Build Universal Version ✅
 
-**理由**:
-- Gitea 是 GitHub 的開源替代，使用者可能同時使用兩者
-- 可貢獻回原專案，造福開源社群
-- tea CLI 與 gh CLI 命令結構相似，轉換成本低
-- 技術上只需建立抽象層，複雜度可控
+**Rationale**:
+- Gitea is an open-source GitHub alternative, users may use both
+- Can contribute back to the original project, benefiting the open-source community
+- tea CLI and gh CLI have similar command structures, low conversion cost
+- Technically only requires building an abstraction layer, manageable complexity
 
-**預估工時**: 15-20 天
+**Estimated Effort**: 15-20 days
 
 ---
 
-## 技術分析
+## Technical Analysis
 
-### ✅ 有利因素
+### ✅ Advantages
 
-1. **tea CLI 功能完整**
+1. **Complete tea CLI Functionality**
    - issues: create, edit, close, reopen, list
    - pull requests: create, merge, close, checkout
-   - labels, milestones, releases 完整支援
-   - comment 功能可用
+   - Full support for labels, milestones, releases
+   - Comment functionality available
 
-2. **架構相容性高**
-   - CCPM 核心是 markdown + shell scripts
-   - 邏輯與 Git forge 平台無關
-   - 工作流程設計通用
+2. **High Architectural Compatibility**
+   - CCPM core is markdown + shell scripts
+   - Logic is platform-agnostic
+   - Workflow design is universal
 
-3. **命令映射清楚**
+3. **Clear Command Mapping**
    ```bash
    GitHub CLI          →  Gitea tea CLI
    ──────────────────────────────────────
@@ -43,124 +43,124 @@
    gh auth login       →  tea login add
    ```
 
-### ⚠️ 主要挑戰
+### ⚠️ Main Challenges
 
-1. **gh-sub-issue 擴充功能缺失**
-   - CCPM 依賴此功能建立 parent-child issue 關係
-   - Gitea/tea **無對應功能**
-   - **解決方案**: 使用 task list (`- [ ] #123`) 替代
+1. **Missing gh-sub-issue Extension**
+   - CCPM relies on this for parent-child issue relationships
+   - Gitea/tea **has no equivalent feature**
+   - **Solution**: Use task lists (`- [ ] #123`) instead
 
-2. **JSON 輸出格式差異**
-   - 需驗證 tea CLI 的 `--output json` 格式
-   - 可能需調整解析邏輯
+2. **JSON Output Format Differences**
+   - Need to verify tea CLI's `--output json` format
+   - May need to adjust parsing logic
 
-3. **認證機制不同**
-   - GitHub: OAuth/Token 自動化
-   - Gitea: 需手動設定 server URL + token
+3. **Different Authentication Mechanisms**
+   - GitHub: OAuth/Token automation
+   - Gitea: Manual server URL + token setup required
 
-4. **Repository 探測邏輯**
+4. **Repository Detection Logic**
    - GitHub: `gh repo view --json nameWithOwner`
-   - Gitea: tea 使用當前目錄的 git config
-   - 需重寫 repository 偵測
+   - Gitea: tea uses current directory's git config
+   - Need to rewrite repository detection
 
 ---
 
-## 開發階段規劃
+## Development Phases
 
-### 階段一：驗證可行性 (1-2 天)
-- [ ] 安裝並測試 tea CLI 所有必要指令
-- [ ] 建立 Gitea 測試 repository
-- [ ] 驗證 JSON 輸出格式
-- [ ] 測試認證流程
+### Phase 1: Feasibility Validation (1-2 days)
+- [ ] Install and test all necessary tea CLI commands
+- [ ] Create Gitea test repository
+- [ ] Verify JSON output format
+- [ ] Test authentication flow
 
-### 階段二：建立抽象層 (3-5 天)
+### Phase 2: Build Abstraction Layer (3-5 days)
 
-建立統一的 git forge 介面：
+Build a unified git forge interface:
 
 ```bash
 .claude/scripts/forge/
-├── detect.sh         # 偵測 GitHub vs Gitea
-├── init.sh           # 初始化對應的 CLI
-├── issue-create.sh   # 統一的 issue 建立
-├── issue-edit.sh     # 統一的 issue 編輯
-├── issue-comment.sh  # 統一的 issue 評論
-├── pr-create.sh      # 統一的 PR 建立
-└── repo-info.sh      # 統一的 repo 資訊
+├── detect.sh         # Detect GitHub vs Gitea
+├── init.sh           # Initialize corresponding CLI
+├── issue-create.sh   # Unified issue creation
+├── issue-edit.sh     # Unified issue editing
+├── issue-comment.sh  # Unified issue commenting
+├── pr-create.sh      # Unified PR creation
+└── repo-info.sh      # Unified repo information
 ```
 
-**設計原則**:
-- 對外提供一致的介面
-- 內部根據 forge 類型調用對應 CLI
-- 錯誤處理統一化
+**Design Principles**:
+- Provide consistent external interface
+- Internally call corresponding CLI based on forge type
+- Unified error handling
 
-### 階段三：實作 Gitea 支援 (5-7 天)
+### Phase 3: Implement Gitea Support (5-7 days)
 
-#### 核心檔案修改
+#### Core File Modifications
 
-| 檔案 | 改動程度 | 說明 |
-|------|---------|------|
-| `scripts/pm/init.sh` | 大幅 | 支援 tea CLI 安裝與設定 |
-| `commands/pm/epic-sync.md` | 大幅 | 使用 forge 抽象層 |
-| `rules/github-operations.md` | 重寫 | 改為 `forge-operations.md` |
-| `commands/pm/issue-*.md` | 中度 | 替換 CLI 調用 |
-| `commands/pm/epic-*.md` | 中度 | 替換 CLI 調用 |
+| File | Modification Scope | Description |
+|------|-------------------|-------------|
+| `scripts/pm/init.sh` | Major | Support tea CLI installation and configuration |
+| `commands/pm/epic-sync.md` | Major | Use forge abstraction layer |
+| `rules/github-operations.md` | Rewrite | Rename to `forge-operations.md` |
+| `commands/pm/issue-*.md` | Medium | Replace CLI calls |
+| `commands/pm/epic-*.md` | Medium | Replace CLI calls |
 
-#### Sub-issue 替代方案實作
-- epic issue 使用 task list 追蹤 sub-tasks
-- 自動更新 task list 狀態
-- 保持視覺化進度追蹤
+#### Sub-issue Alternative Implementation
+- Epic issues use task lists to track sub-tasks
+- Auto-update task list status
+- Maintain visual progress tracking
 
-### 階段四：測試與文件 (2-3 天)
-- [ ] 完整工作流程測試（GitHub + Gitea）
-- [ ] 撰寫 Gitea 設定文件
-- [ ] 更新 README 說明雙平台支援
-- [ ] 建立範例與教學
+### Phase 4: Testing and Documentation (2-3 days)
+- [ ] Complete workflow testing (GitHub + Gitea)
+- [ ] Write Gitea setup documentation
+- [ ] Update README to explain dual-platform support
+- [ ] Create examples and tutorials
 
 ---
 
-## 需要修改的核心檔案清單
+## Core Files Requiring Modification
 
-### 高優先級（必須修改）
-1. `ccpm/scripts/pm/init.sh` - 初始化流程
-2. `ccpm/commands/pm/epic-sync.md` - Epic 同步
-3. `ccpm/rules/github-operations.md` - 平台操作規則
-4. `ccpm/commands/pm/issue-start.md` - Issue 啟動
-5. `ccpm/commands/pm/issue-sync.md` - Issue 同步
+### High Priority (Must Modify)
+1. `ccpm/scripts/pm/init.sh` - Initialization flow
+2. `ccpm/commands/pm/epic-sync.md` - Epic synchronization
+3. `ccpm/rules/github-operations.md` - Platform operation rules
+4. `ccpm/commands/pm/issue-start.md` - Issue startup
+5. `ccpm/commands/pm/issue-sync.md` - Issue synchronization
 
-### 中優先級（需調整）
+### Medium Priority (Needs Adjustment)
 6. `ccpm/commands/pm/issue-edit.md`
 7. `ccpm/commands/pm/issue-close.md`
 8. `ccpm/commands/pm/epic-close.md`
-9. 其他 pm commands (~15 個)
+9. Other pm commands (~15 files)
 
-### 低優先級（可選）
-10. 文檔與範例更新
+### Low Priority (Optional)
+10. Documentation and example updates
 
 ---
 
-## 技術筆記
+## Technical Notes
 
-### tea CLI 重要指令
+### Important tea CLI Commands
 
 ```bash
-# 認證
+# Authentication
 tea login add --name myserver --url https://gitea.example.com --token abc123
 
-# Issue 操作
+# Issue Operations
 tea issue create --title "Title" --body "Body" --labels "epic,task"
 tea issue edit 123 --add-labels "in-progress"
 tea issue close 123
 
-# PR 操作
+# PR Operations
 tea pull create --title "PR Title" --body "Description"
 tea pull merge 123
 
-# 查詢
+# Queries
 tea issue list --output json
 tea repo show
 ```
 
-### 抽象層設計範例
+### Abstraction Layer Design Example
 
 ```bash
 # .claude/scripts/forge/detect.sh
@@ -179,18 +179,18 @@ detect_forge() {
 
 ---
 
-## 下一步行動
+## Next Actions
 
-1. ✅ 記錄對話內容（本文檔）
-2. 🔄 重命名專案目錄
-3. ⏳ 建立 Gitea 測試 repository
-4. ⏳ 開始階段一：驗證 tea CLI 功能
+1. ✅ Record conversation (this document)
+2. 🔄 Rename project directory
+3. ⏳ Create Gitea test repository
+4. ⏳ Start Phase 1: Verify tea CLI functionality
 
 ---
 
-## 參考資源
+## Reference Resources
 
-- CCPM 原專案: https://github.com/automazeio/ccpm
+- CCPM Original Project: https://github.com/automazeio/ccpm
 - Gitea tea CLI: https://gitea.com/gitea/tea
-- Gitea CLI 文檔: https://docs.gitea.com/administration/command-line
-- tea CLI 命令參考: https://gitea.com/gitea/tea/src/branch/main/docs/CLI.md
+- Gitea CLI Documentation: https://docs.gitea.com/administration/command-line
+- tea CLI Command Reference: https://gitea.com/gitea/tea/src/branch/main/docs/CLI.md

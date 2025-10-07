@@ -1,29 +1,29 @@
-# CCPM Gitea 測試計劃
+# CCPM Gitea Test Plan
 
-**測試日期**: 2025-10-07
+**Test Date**: 2025-10-07
 **Gitea Server**: http://192.168.100.20:53000
 **Test Repo**: ivan/ccpm-forge-test
 
 ---
 
-## 🎯 測試目標
+## 🎯 Test Objectives
 
-驗證 CCPM 在 Gitea 環境中的完整工作流程，確保所有核心功能正常運作。
+Validate the complete CCPM workflow in a Gitea environment, ensuring all core functions work properly.
 
 ---
 
-## 📋 測試環境準備
+## 📋 Test Environment Setup
 
-### 1. 環境檢查
+### 1. Environment Check
 
 ```bash
-# 1. 檢查 tea CLI
+# 1. Check tea CLI
 /tmp/tea --version
 
-# 2. 檢查 tea login 狀態
+# 2. Check tea login status
 /tmp/tea login list
 
-# 3. 確認 tea 在 PATH 中 (或創建 alias)
+# 3. Ensure tea is in PATH (or create alias)
 export PATH="/tmp:$PATH"
 tea --version
 ```
@@ -36,46 +36,46 @@ cd /tmp
 git clone http://192.168.100.20:53000/ivan/ccpm-forge-test.git
 cd ccpm-forge-test
 
-# 複製 CCPM 整合代碼
+# Copy CCPM integration code
 cp -r /home/ivan/code/ccpm-forge/.claude .
 ```
 
 ---
 
-## 🧪 測試案例
+## 🧪 Test Cases
 
-### 測試案例 1: Forge 偵測與初始化
+### Test Case 1: Forge Detection and Initialization
 
-**目標**: 驗證自動偵測 Gitea 並正確初始化
+**Objective**: Verify automatic Gitea detection and proper initialization
 
 ```bash
-# 測試 forge 偵測
+# Test forge detection
 cd /tmp/ccpm-forge-test
 source .claude/scripts/forge/detect.sh
 forge_type=$(detect_forge)
 echo "Detected forge: $forge_type"
-# 預期輸出: gitea
+# Expected output: gitea
 
-# 測試 forge 初始化
+# Test forge initialization
 source .claude/scripts/forge/config.sh
 forge_init
 echo "Forge type: $FORGE_TYPE"
-# 預期輸出: gitea
+# Expected output: gitea
 ```
 
-**驗收標準**:
-- [ ] 正確偵測為 "gitea"
-- [ ] forge_init 成功執行
-- [ ] 環境變量 FORGE_TYPE 設為 "gitea"
+**Acceptance Criteria**:
+- [ ] Correctly detected as "gitea"
+- [ ] forge_init executes successfully
+- [ ] Environment variable FORGE_TYPE set to "gitea"
 
 ---
 
-### 測試案例 2: Label 建立
+### Test Case 2: Label Creation
 
-**目標**: 驗證 forge 抽象層可以建立 labels
+**Objective**: Verify forge abstraction layer can create labels
 
 ```bash
-# 使用 forge 抽象層建立 label
+# Create labels using forge abstraction layer
 source .claude/scripts/forge/label-create.sh
 
 forge_label_create \
@@ -89,19 +89,19 @@ forge_label_create \
   --description "Task issue"
 ```
 
-**驗收標準**:
-- [ ] Labels 成功建立
-- [ ] 可在 Gitea web UI 看到 labels
-- [ ] Label 顏色和描述正確
+**Acceptance Criteria**:
+- [ ] Labels created successfully
+- [ ] Labels visible in Gitea web UI
+- [ ] Label colors and descriptions correct
 
 ---
 
-### 測試案例 3: Issue 建立
+### Test Case 3: Issue Creation
 
-**目標**: 驗證可以透過 forge 抽象層建立 issues
+**Objective**: Verify issue creation through forge abstraction layer
 
 ```bash
-# 建立測試 epic issue
+# Create test epic issue
 source .claude/scripts/forge/issue-create.sh
 
 epic_body="# Test Epic
@@ -121,7 +121,7 @@ epic_num=$(forge_issue_create \
 
 echo "Created epic: #$epic_num"
 
-# 建立測試 task issue
+# Create test task issue
 task_body="# Test Task 1
 
 ## Description
@@ -139,98 +139,98 @@ task_num=$(forge_issue_create \
 echo "Created task: #$task_num"
 ```
 
-**驗收標準**:
-- [ ] Epic issue 成功建立
-- [ ] Task issue 成功建立
-- [ ] Issues 在 Gitea web UI 可見
-- [ ] Labels 正確套用
+**Acceptance Criteria**:
+- [ ] Epic issue created successfully
+- [ ] Task issue created successfully
+- [ ] Issues visible in Gitea web UI
+- [ ] Labels correctly applied
 
 ---
 
-### 測試案例 4: Task List 更新
+### Test Case 4: Task List Update
 
-**目標**: 驗證可以更新 epic issue body 加入 task list
+**Objective**: Verify epic issue body can be updated with task list
 
 ```bash
-# 獲取當前 epic body
+# Get current epic body
 epic_current_body=$(tea issues list --output yaml | grep -A 20 "index: $epic_num" | grep -A 15 "body:" | tail -n +2)
 
-# 建立包含 task list 的新 body
+# Create new body with task list
 epic_new_body="$epic_current_body
 
 ## Tasks
 - [ ] #$task_num Task: Setup test environment"
 
-# 更新 epic issue (需要使用平台特定的方式)
-# 注意: tea CLI 可能不支援 body 更新，需要確認
+# Update epic issue (using platform-specific method)
+# Note: tea CLI may not support body updates, needs verification
 echo "Epic body with task list:"
 echo "$epic_new_body"
 ```
 
-**驗收標準**:
-- [ ] Epic body 包含 task list
-- [ ] Task list 在 Gitea web UI 正確顯示
-- [ ] Checkbox 可以勾選
+**Acceptance Criteria**:
+- [ ] Epic body contains task list
+- [ ] Task list displays correctly in Gitea web UI
+- [ ] Checkboxes are clickable
 
 ---
 
-### 測試案例 5: Issue 編輯與關閉
+### Test Case 5: Issue Edit and Close
 
-**目標**: 驗證 issue 編輯和狀態變更
+**Objective**: Verify issue editing and status changes
 
 ```bash
-# 測試 issue 編輯
+# Test issue editing
 source .claude/scripts/forge/issue-edit.sh
 
 forge_issue_edit $task_num --add-labels "in-progress"
 
-# 測試 issue 關閉
+# Test issue closing
 forge_issue_edit $task_num --state closed
 
-# 驗證狀態
+# Verify status
 tea issues list --state closed | grep "#$task_num"
 ```
 
-**驗收標準**:
-- [ ] Labels 成功新增
-- [ ] Issue 成功關閉
-- [ ] 狀態在 Gitea 正確顯示
+**Acceptance Criteria**:
+- [ ] Labels added successfully
+- [ ] Issue closed successfully
+- [ ] Status displays correctly in Gitea
 
 ---
 
-### 測試案例 6: Issue 評論
+### Test Case 6: Issue Comments
 
-**目標**: 驗證可以新增評論
+**Objective**: Verify comment functionality
 
 ```bash
-# 測試評論功能
+# Test comment feature
 source .claude/scripts/forge/issue-comment.sh
 
 forge_issue_comment $task_num --body "✅ Task completed successfully!
 
 This is a test comment from CCPM forge abstraction layer."
 
-# 驗證評論
+# Verify comment
 tea issues $task_num
 ```
 
-**驗收標準**:
-- [ ] 評論成功發布
-- [ ] 評論在 Gitea web UI 可見
-- [ ] 評論格式正確
+**Acceptance Criteria**:
+- [ ] Comment posted successfully
+- [ ] Comment visible in Gitea web UI
+- [ ] Comment format correct
 
 ---
 
-### 測試案例 7: 完整 CCPM 工作流程
+### Test Case 7: Complete CCPM Workflow
 
-**目標**: 測試完整的 Epic → Task → Sync → Close 流程
+**Objective**: Test complete Epic → Task → Sync → Close workflow
 
-#### 7.1 準備測試 Epic
+#### 7.1 Prepare Test Epic
 
 ```bash
 cd /tmp/ccpm-forge-test
 
-# 創建測試 epic 結構
+# Create test epic structure
 mkdir -p .claude/epics/test-feature
 
 cat > .claude/epics/test-feature/epic.md << 'EOF'
@@ -258,7 +258,7 @@ Test epic for CCPM Gitea integration validation.
 <!-- Will be populated by epic-sync -->
 EOF
 
-# 創建測試 task
+# Create test task
 cat > .claude/epics/test-feature/001.md << 'EOF'
 ---
 name: Setup database schema
@@ -283,12 +283,12 @@ Create initial database schema for the feature.
 EOF
 ```
 
-#### 7.2 執行 Epic Sync (模擬)
+#### 7.2 Execute Epic Sync (Simulated)
 
-由於是測試環境，我們需要手動執行 epic-sync 的核心步驟：
+Since this is a test environment, we need to manually execute epic-sync core steps:
 
 ```bash
-# 1. 建立 epic issue
+# 1. Create epic issue
 epic_title="Epic: Test Feature"
 epic_body=$(sed '1,/^---$/d; 1,/^---$/d' .claude/epics/test-feature/epic.md)
 
@@ -300,7 +300,7 @@ epic_num=$(forge_issue_create \
 
 echo "Created epic: #$epic_num"
 
-# 2. 建立 task issue
+# 2. Create task issue
 task_title="Setup database schema"
 task_body=$(sed '1,/^---$/d; 1,/^---$/d' .claude/epics/test-feature/001.md)
 
@@ -311,105 +311,105 @@ task_num=$(forge_issue_create \
 
 echo "Created task: #$task_num"
 
-# 3. 更新 epic issue 加入 task list
-# (需要在 Gitea web UI 手動更新，或使用 API)
+# 3. Update epic issue with task list
+# (Needs manual update in Gitea web UI, or use API)
 
-# 4. 重新命名 task 檔案並更新 frontmatter
+# 4. Rename task file and update frontmatter
 mv .claude/epics/test-feature/001.md .claude/epics/test-feature/$task_num.md
 
-# 更新 task frontmatter (簡化版)
+# Update task frontmatter (simplified)
 sed -i "s|github:.*|github: http://192.168.100.20:53000/ivan/ccpm-forge-test/issues/$task_num|" \
   .claude/epics/test-feature/$task_num.md
 ```
 
-#### 7.3 驗證工作流程
+#### 7.3 Verify Workflow
 
 ```bash
-# 檢查 issues
+# Check issues
 tea issues list --state all
 
-# 檢查 epic
+# Check epic
 tea issues $epic_num
 
-# 檢查 task
+# Check task
 tea issues $task_num
 ```
 
-**驗收標準**:
-- [ ] Epic 成功建立並包含正確的 labels
-- [ ] Task 成功建立並關聯到 epic
-- [ ] Task list 在 epic 中顯示 (需手動驗證 web UI)
-- [ ] Local 檔案正確更新 (task 重新命名為 issue number)
+**Acceptance Criteria**:
+- [ ] Epic created successfully with correct labels
+- [ ] Task created successfully and linked to epic
+- [ ] Task list displays in epic (manual verification in web UI)
+- [ ] Local files updated correctly (task renamed to issue number)
 
 ---
 
-## 📊 測試結果記錄
+## 📊 Test Results Log
 
-### 環境資訊
-- Gitea 版本: ___________
-- tea CLI 版本: ___________
-- CCPM 版本: ___________
+### Environment Information
+- Gitea Version: ___________
+- tea CLI Version: ___________
+- CCPM Version: ___________
 
-### 測試結果總覽
+### Test Results Summary
 
-| 測試案例 | 狀態 | 備註 |
-|---------|------|------|
-| 1. Forge 偵測與初始化 | ⬜ | |
-| 2. Label 建立 | ⬜ | |
-| 3. Issue 建立 | ⬜ | |
-| 4. Task List 更新 | ⬜ | |
-| 5. Issue 編輯與關閉 | ⬜ | |
-| 6. Issue 評論 | ⬜ | |
-| 7. 完整工作流程 | ⬜ | |
+| Test Case | Status | Notes |
+|-----------|--------|-------|
+| 1. Forge Detection and Initialization | ⬜ | |
+| 2. Label Creation | ⬜ | |
+| 3. Issue Creation | ⬜ | |
+| 4. Task List Update | ⬜ | |
+| 5. Issue Edit and Close | ⬜ | |
+| 6. Issue Comments | ⬜ | |
+| 7. Complete Workflow | ⬜ | |
 
-### 發現的問題
+### Issues Found
 
-1. **問題描述**:
-   - **影響程度**:
-   - **解決方案**:
+1. **Issue Description**:
+   - **Impact Level**:
+   - **Solution**:
 
-2. **問題描述**:
-   - **影響程度**:
-   - **解決方案**:
-
----
-
-## 🔧 已知限制
-
-1. **Tea CLI 限制**:
-   - 不支援 JSON 輸出 (僅 YAML)
-   - Issue body 更新可能需要手動或 API
-   - 某些進階功能可能不支援
-
-2. **Gitea 限制**:
-   - 沒有原生的 sub-issue 功能
-   - 依賴 markdown task list
-   - Task list 狀態需手動更新
-
-3. **CCPM 適配**:
-   - Task list 更新邏輯需要進一步完善
-   - 某些操作可能需要平台特定處理
+2. **Issue Description**:
+   - **Impact Level**:
+   - **Solution**:
 
 ---
 
-## ✅ 測試通過標準
+## 🔧 Known Limitations
 
-所有測試案例都必須通過，核心功能包括：
+1. **Tea CLI Limitations**:
+   - No JSON output support (YAML only)
+   - Issue body updates may require manual editing or API
+   - Some advanced features may not be supported
 
-1. ✅ 自動偵測 Gitea
-2. ✅ 建立 epic 和 task issues
-3. ✅ Labels 正確套用
-4. ✅ Task list 功能運作
-5. ✅ Issue 狀態管理
-6. ✅ 評論功能
+2. **Gitea Limitations**:
+   - No native sub-issue functionality
+   - Relies on markdown task lists
+   - Task list status requires manual updates
+
+3. **CCPM Adaptations**:
+   - Task list update logic needs further refinement
+   - Some operations may require platform-specific handling
 
 ---
 
-## 📝 下一步
+## ✅ Test Pass Criteria
 
-測試完成後：
-1. 記錄所有發現的問題
-2. 更新 IMPLEMENTATION_PROGRESS.md
-3. 修復關鍵問題
-4. 準備文檔和使用指南
-5. 考慮是否貢獻回原專案
+All test cases must pass, core functionality includes:
+
+1. ✅ Automatic Gitea detection
+2. ✅ Create epic and task issues
+3. ✅ Labels correctly applied
+4. ✅ Task list functionality works
+5. ✅ Issue status management
+6. ✅ Comment functionality
+
+---
+
+## 📝 Next Steps
+
+After testing:
+1. Record all discovered issues
+2. Update IMPLEMENTATION_PROGRESS.md
+3. Fix critical issues
+4. Prepare documentation and user guides
+5. Consider contributing back to original project
