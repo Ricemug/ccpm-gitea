@@ -73,13 +73,26 @@ _forge_issue_comment_github() {
   local repo="$2"
   local body="$3"
 
-  local cmd="gh issue comment $issue_number --body \"$body\""
+  # Write body to temp file to avoid command injection and preserve formatting
+  local temp_file
+  temp_file=$(mktemp) || return 1
+  printf '%s' "$body" > "$temp_file"
+
+  # Build command as array to avoid eval
+  local args=(gh issue comment "$issue_number" --body-file "$temp_file")
 
   if [[ -n "$repo" ]]; then
-    cmd="$cmd --repo $repo"
+    args+=(--repo "$repo")
   fi
 
-  eval "$cmd"
+  # Execute command safely
+  "${args[@]}"
+  local exit_code=$?
+
+  # Clean up temp file
+  rm -f "$temp_file"
+
+  return $exit_code
 }
 
 _forge_issue_comment_gitea() {
@@ -87,14 +100,16 @@ _forge_issue_comment_gitea() {
   local repo="$2"
   local body="$3"
 
-  # tea comment 的語法是: tea comment <issue> <body>
-  local cmd="tea comment $issue_number \"$body\""
+  # tea comment syntax: tea comment <issue> <body>
+  # Build command as array to avoid eval and preserve special characters
+  local args=(tea comment "$issue_number" "$body")
 
   if [[ -n "$repo" ]]; then
-    cmd="$cmd --repo $repo"
+    args+=(--repo "$repo")
   fi
 
-  eval "$cmd"
+  # Execute command safely without eval
+  "${args[@]}"
 }
 
 # 如果直接執行此腳本
