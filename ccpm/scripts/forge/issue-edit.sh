@@ -105,6 +105,7 @@ _forge_issue_edit_github() {
 
   # Build edit command as array to avoid eval
   local cmd=(gh issue edit "$issue_number")
+  local has_edit_flags=false
 
   if [[ -n "$repo" ]]; then
     cmd+=(--repo "$repo")
@@ -112,26 +113,31 @@ _forge_issue_edit_github() {
 
   if [[ -n "$title" ]]; then
     cmd+=(--title "$title")
+    has_edit_flags=true
   fi
 
   if [[ -n "$body" ]]; then
     cmd+=(--body "$body")
+    has_edit_flags=true
   fi
 
   if [[ -n "$add_labels" ]]; then
     cmd+=(--add-label "$add_labels")
+    has_edit_flags=true
   fi
 
   if [[ -n "$remove_labels" ]]; then
     cmd+=(--remove-label "$remove_labels")
+    has_edit_flags=true
   fi
 
   if [[ -n "$milestone" ]]; then
     cmd+=(--milestone "$milestone")
+    has_edit_flags=true
   fi
 
-  # Only execute edit if there are actual changes (more than base command + repo)
-  if [[ ${#cmd[@]} -gt 3 ]]; then
+  # Only execute edit if there are actual changes
+  if [[ "$has_edit_flags" == "true" ]]; then
     "${cmd[@]}"
   fi
 
