@@ -37,7 +37,8 @@ forge_init || exit 1
 Get issue details from forge:
 ```bash
 source .claude/scripts/forge/issue-list.sh
-forge_issue_list --state all | grep -A 10 "index: $ARGUMENTS"
+# GitHub uses "number:", Gitea uses "index:" - match either
+forge_issue_list --state all | grep -A 10 -E "(number|index): $ARGUMENTS"
 ```
 
 Read local task file to understand:

@@ -26,7 +26,8 @@ forge_init || exit 1
 Use forge abstraction to get current status:
 ```bash
 source .claude/scripts/forge/issue-list.sh
-forge_issue_list --state all | grep -A 10 "index: $ARGUMENTS"
+# GitHub uses "number:", Gitea uses "index:" - match either
+forge_issue_list --state all | grep -A 10 -E "(number|index): $ARGUMENTS"
 ```
 
 ### 2. Status Display

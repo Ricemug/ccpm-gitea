@@ -41,7 +41,8 @@ Do not bother the user with preflight checks progress ("I'm not going to ..."). 
    - Use forge abstraction to check issue:
    ```bash
    source .claude/scripts/forge/issue-list.sh
-   issue_data=$(forge_issue_list --state all | grep -A 5 "index: $ARGUMENTS")
+   # GitHub uses "number:", Gitea uses "index:" - match either
+   issue_data=$(forge_issue_list --state all | grep -A 5 -E "(number|index): $ARGUMENTS")
    ```
    - If issue doesn't exist, tell user: "❌ Issue #$ARGUMENTS not found"
    - If issue is closed and completion < 100%, warn: "⚠️ Issue is closed but work incomplete"

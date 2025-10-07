@@ -42,7 +42,8 @@ Begin work on an issue with parallel agents based on work stream analysis.
 2. **Get issue details:**
    ```bash
    source .claude/scripts/forge/issue-list.sh
-   forge_issue_list --state all | grep "index: $ARGUMENTS" || echo "❌ Cannot access issue #$ARGUMENTS. Check number or authentication."
+   # GitHub uses "number:", Gitea uses "index:" - match either
+   forge_issue_list --state all | grep -E "(number|index): $ARGUMENTS" || echo "❌ Cannot access issue #$ARGUMENTS. Check number or authentication."
    ```
    If it fails: "❌ Cannot access issue #$ARGUMENTS. Run /pm:init to configure authentication."
 
