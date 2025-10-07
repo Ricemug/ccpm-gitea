@@ -13,9 +13,9 @@
 &nbsp;
 [![Star this repo](https://img.shields.io/github/stars/automazeio/ccpm.svg?style=social&label=Star%20this%20repo&maxAge=60)](https://github.com/automazeio/ccpm)
 
-### Claude Code workflow to ship ~~faster~~ _better_ using spec-driven development, GitHub issues, Git worktrees, and multiple AI agents running in parallel.
+### Claude Code workflow to ship ~~faster~~ _better_ using spec-driven development, GitHub/Gitea issues, Git worktrees, and multiple AI agents running in parallel.
 
-**[中文文档 (Chinese Documentation)](zh-docs/README_ZH.md)**
+**[繁體中文文檔 (Traditional Chinese)](README-TW.md)** | **[简体中文文档 (Simplified Chinese)](zh-docs/README_ZH.md)**
 
 Stop losing context. Stop blocking on tasks. Stop shipping bugs. This battle-tested system turns PRDs into epics, epics into GitHub issues, and issues into production code – with full traceability at every step.
 
@@ -411,9 +411,12 @@ Teams using this system report:
    /pm:init
    ```
    This command will:
-   - Install GitHub CLI (if needed)
-   - Authenticate with GitHub
-   - Install [gh-sub-issue extension](https://github.com/yahsan2/gh-sub-issue) for proper parent-child relationships
+   - Detect your Git forge (GitHub or Gitea)
+   - Let you choose forge type (GitHub, Gitea, or auto-detect)
+   - Install required CLI tools:
+     - **GitHub**: Install GitHub CLI and [gh-sub-issue extension](https://github.com/yahsan2/gh-sub-issue) for proper parent-child relationships
+     - **Gitea**: Install Gitea CLI (tea) - uses task lists instead of sub-issues
+   - Authenticate with your chosen forge
    - Create required directories
    - Update .gitignore
 
@@ -451,9 +454,12 @@ Watch as structured planning transforms into shipped code.
 
 ## Technical Notes
 
-### GitHub Integration
-- Uses **gh-sub-issue extension** for proper parent-child relationships
-- Falls back to task lists if extension not installed
+### GitHub/Gitea Integration
+- **Supports both GitHub and Gitea** - choose during `/pm:init`
+- **GitHub**: Uses **gh-sub-issue extension** for proper parent-child relationships
+  - Falls back to task lists if extension not installed
+- **Gitea**: Uses markdown task lists in epic issue body (since Gitea doesn't support sub-issues API)
+  - Format: `- [ ] Task: Title #123`
 - Epic issues track sub-task completion automatically
 - Labels provide additional organization (`epic:feature`, `task:feature`)
 

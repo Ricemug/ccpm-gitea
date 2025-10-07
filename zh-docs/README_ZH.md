@@ -11,9 +11,11 @@
 &nbsp;
 [![给这个仓库点赞](https://img.shields.io/badge/★-给这个仓库点赞-e7b10b)](https://github.com/automazeio/ccpm)
 
-### 使用规范驱动开发、GitHub issues、Git worktrees和并行运行的多个AI代理来交付~~更快~~_更好的_ Claude Code工作流程。
+### 使用规范驱动开发、GitHub/Gitea issues、Git worktrees和并行运行的多个AI代理来交付~~更快~~_更好的_ Claude Code工作流程。
 
-停止丢失上下文。停止在任务上阻塞。停止交付bug。这个经过实战检验的系统将PRD转化为史诗任务，将史诗任务分解为GitHub issues，并将issues转化为生产代码——每一步都有完整的可追溯性。
+**[繁體中文文檔 (Traditional Chinese)](../README-TW.md)** | **[English Documentation](../README.md)**
+
+停止丢失上下文。停止在任务上阻塞。停止交付bug。这个经过实战检验的系统将PRD转化为史诗任务，将史诗任务分解为GitHub/Gitea issues，并将issues转化为生产代码——每一步都有完整的可追溯性。
 
 ![Claude Code PM](screenshot.webp)
 
@@ -407,9 +409,12 @@ GitHub无需知道工作是如何完成的——只需知道工作已完成。
    /pm:init
    ```
    此命令将：
-   - 安装GitHub CLI（如需要）
-   - 与GitHub进行身份验证
-   - 安装[gh-sub-issue扩展](https://github.com/yahsan2/gh-sub-issue)以建立正确的父子关系
+   - 检测你的Git forge（GitHub或Gitea）
+   - 让你选择forge类型（GitHub、Gitea或自动检测）
+   - 安装所需的CLI工具：
+     - **GitHub**: 安装GitHub CLI和[gh-sub-issue扩展](https://github.com/yahsan2/gh-sub-issue)以建立正确的父子关系
+     - **Gitea**: 安装Gitea CLI（tea）- 使用task lists而不是sub-issues
+   - 与你选择的forge进行身份验证
    - 创建所需目录
    - 更新.gitignore
 
@@ -447,9 +452,12 @@ GitHub无需知道工作是如何完成的——只需知道工作已完成。
 
 ## 技术说明
 
-### GitHub集成
-- 使用**gh-sub-issue扩展**建立正确的父子关系
-- 如果未安装扩展则回退到任务列表
+### GitHub/Gitea集成
+- **同时支持GitHub和Gitea** - 在`/pm:init`时选择
+- **GitHub**: 使用**gh-sub-issue扩展**建立正确的父子关系
+  - 如果未安装扩展则回退到任务列表
+- **Gitea**: 在epic issue body中使用markdown task lists（因为Gitea不支持sub-issues API）
+  - 格式：`- [ ] Task: Title #123`
 - 史诗任务issues自动跟踪子任务完成情况
 - 标签提供额外组织（`epic:feature`，`task:feature`）
 
