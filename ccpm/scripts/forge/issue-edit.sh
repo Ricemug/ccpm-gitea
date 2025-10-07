@@ -187,7 +187,12 @@ _forge_issue_edit_gitea() {
     fi
 
     # Execute state change safely without eval
-    "${state_cmd[@]}"
+    if ! "${state_cmd[@]}"; then
+      local error_msg="Failed to change issue state with tea issues for issue #$issue_number"
+      [[ -n "$repo" ]] && error_msg+=" in repo $repo"
+      forge_error "$error_msg"
+      return 1
+    fi
   fi
 
   # Handle title and body edits
