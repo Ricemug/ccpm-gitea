@@ -62,9 +62,9 @@ if [ ! -z "$epic_issue" ]; then
         task_status=$(grep 'status:' $task_file | cut -d: -f2 | tr -d ' ')
 
         if [ "$task_status" = "closed" ]; then
-          sed -i "s/- \[ \] #$task_issue/- [x] #$task_issue/" /tmp/epic-body.md
+          perl -pi -e "s/- \[ \] #$task_issue/- [x] #$task_issue/" /tmp/epic-body.md
         else
-          sed -i "s/- \[x\] #$task_issue/- [ ] #$task_issue/" /tmp/epic-body.md
+          perl -pi -e "s/- \[x\] #$task_issue/- [ ] #$task_issue/" /tmp/epic-body.md
         fi
       done
 

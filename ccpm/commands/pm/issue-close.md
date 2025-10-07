@@ -80,7 +80,7 @@ if [ ! -z "$epic_issue" ]; then
     # Note: This requires platform-specific handling until forge abstraction supports body updates
     if [[ "$FORGE_TYPE" == "github" ]]; then
       gh issue view $epic_issue --json body -q .body > /tmp/epic-body.md
-      sed -i "s/- \[ \] #$ARGUMENTS/- [x] #$ARGUMENTS/" /tmp/epic-body.md
+      perl -pi -e "s/- \[ \] #$ARGUMENTS/- [x] #$ARGUMENTS/" /tmp/epic-body.md
       gh issue edit $epic_issue --body-file /tmp/epic-body.md
       echo "✓ Updated epic progress on GitHub"
     elif [[ "$FORGE_TYPE" == "gitea" ]]; then
