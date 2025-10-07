@@ -93,25 +93,38 @@ _forge_issue_create_github() {
   local milestone="$5"
   local assignee="$6"
 
-  local cmd="gh issue create --title \"$title\" --body \"$body\""
+  # Write body to temp file to avoid command injection and preserve formatting
+  local temp_file
+  temp_file=$(mktemp) || return 1
+  printf '%s' "$body" > "$temp_file"
+
+  # Build command as array to avoid eval
+  local cmd=(gh issue create --title "$title" --body-file "$temp_file")
 
   if [[ -n "$repo" ]]; then
-    cmd="$cmd --repo $repo"
+    cmd+=(--repo "$repo")
   fi
 
   if [[ -n "$labels" ]]; then
-    cmd="$cmd --label $labels"
+    cmd+=(--label "$labels")
   fi
 
   if [[ -n "$milestone" ]]; then
-    cmd="$cmd --milestone \"$milestone\""
+    cmd+=(--milestone "$milestone")
   fi
 
   if [[ -n "$assignee" ]]; then
-    cmd="$cmd --assignee $assignee"
+    cmd+=(--assignee "$assignee")
   fi
 
-  eval "$cmd"
+  # Execute command safely
+  "${cmd[@]}"
+  local exit_code=$?
+
+  # Clean up temp file
+  rm -f "$temp_file"
+
+  return $exit_code
 }
 
 _forge_issue_create_gitea() {
@@ -122,26 +135,28 @@ _forge_issue_create_gitea() {
   local milestone="$5"
   local assignee="$6"
 
-  # Gitea 使用 --description 而非 --body
-  local cmd="tea issues create --title \"$title\" --description \"$body\""
+  # Build command as array to avoid eval
+  # Gitea uses --description instead of --body
+  local cmd=(tea issues create --title "$title" --description "$body")
 
   if [[ -n "$repo" ]]; then
-    cmd="$cmd --repo $repo"
+    cmd+=(--repo "$repo")
   fi
 
   if [[ -n "$labels" ]]; then
-    cmd="$cmd --labels $labels"
+    cmd+=(--labels "$labels")
   fi
 
   if [[ -n "$milestone" ]]; then
-    cmd="$cmd --milestone \"$milestone\""
+    cmd+=(--milestone "$milestone")
   fi
 
   if [[ -n "$assignee" ]]; then
-    cmd="$cmd --assignees $assignee"
+    cmd+=(--assignees "$assignee")
   fi
 
-  eval "$cmd"
+  # Execute command safely without eval
+  "${cmd[@]}"
 }
 
 # 如果直接執行此腳本
