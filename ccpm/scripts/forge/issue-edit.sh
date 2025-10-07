@@ -103,43 +103,52 @@ _forge_issue_edit_github() {
   local milestone="$7"
   local state="$8"
 
-  local cmd="gh issue edit $issue_number"
+  # Build edit command as array to avoid eval
+  local cmd=(gh issue edit "$issue_number")
 
   if [[ -n "$repo" ]]; then
-    cmd="$cmd --repo $repo"
+    cmd+=(--repo "$repo")
   fi
 
   if [[ -n "$title" ]]; then
-    cmd="$cmd --title \"$title\""
+    cmd+=(--title "$title")
   fi
 
   if [[ -n "$body" ]]; then
-    cmd="$cmd --body \"$body\""
+    cmd+=(--body "$body")
   fi
 
   if [[ -n "$add_labels" ]]; then
-    cmd="$cmd --add-label $add_labels"
+    cmd+=(--add-label "$add_labels")
   fi
 
   if [[ -n "$remove_labels" ]]; then
-    cmd="$cmd --remove-label $remove_labels"
+    cmd+=(--remove-label "$remove_labels")
   fi
 
   if [[ -n "$milestone" ]]; then
-    cmd="$cmd --milestone \"$milestone\""
+    cmd+=(--milestone "$milestone")
   fi
 
+  # Only execute edit if there are actual changes (more than base command + repo)
+  if [[ ${#cmd[@]} -gt 3 ]]; then
+    "${cmd[@]}"
+  fi
+
+  # Handle state changes separately (allows both edit and state change)
   if [[ -n "$state" ]]; then
+    local state_cmd
     if [[ "$state" == "closed" ]]; then
-      cmd="gh issue close $issue_number"
-      [[ -n "$repo" ]] && cmd="$cmd --repo $repo"
+      state_cmd=(gh issue close "$issue_number")
     elif [[ "$state" == "open" ]]; then
-      cmd="gh issue reopen $issue_number"
-      [[ -n "$repo" ]] && cmd="$cmd --repo $repo"
+      state_cmd=(gh issue reopen "$issue_number")
+    fi
+
+    if [[ -n "${state_cmd[*]}" ]]; then
+      [[ -n "$repo" ]] && state_cmd+=(--repo "$repo")
+      "${state_cmd[@]}"
     fi
   fi
-
-  eval "$cmd"
 }
 
 _forge_issue_edit_gitea() {
@@ -152,19 +161,21 @@ _forge_issue_edit_gitea() {
   local milestone="$7"
   local state="$8"
 
-  # 處理狀態變更 (Gitea 需要分開的 close/reopen 指令)
+  # Handle state changes (Gitea requires separate close/reopen commands)
   if [[ -n "$state" ]]; then
-    local state_cmd=""
+    local state_cmd
     if [[ "$state" == "closed" ]]; then
-      state_cmd="tea issues close $issue_number"
+      state_cmd=(tea issues close "$issue_number")
     elif [[ "$state" == "open" ]]; then
-      state_cmd="tea issues reopen $issue_number"
+      state_cmd=(tea issues reopen "$issue_number")
     fi
 
-    if [[ -n "$state_cmd" ]]; then
-      [[ -n "$repo" ]] && state_cmd="$state_cmd --repo $repo"
-      eval "$state_cmd"
+    if [[ -n "$repo" ]]; then
+      state_cmd+=(--repo "$repo")
     fi
+
+    # Execute state change safely without eval
+    "${state_cmd[@]}"
   fi
 
   # Gitea tea CLI 沒有統一的 edit 指令，需要使用 API 或分開處理

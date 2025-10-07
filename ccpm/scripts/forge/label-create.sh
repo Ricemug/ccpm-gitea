@@ -79,17 +79,19 @@ _forge_label_create_github() {
   local color="$3"
   local description="$4"
 
-  local cmd="gh label create \"$name\" --color \"$color\""
+  # Build command as array to avoid eval
+  local cmd=(gh label create "$name" --color "$color")
 
   if [[ -n "$repo" ]]; then
-    cmd="$cmd --repo $repo"
+    cmd+=(--repo "$repo")
   fi
 
   if [[ -n "$description" ]]; then
-    cmd="$cmd --description \"$description\""
+    cmd+=(--description "$description")
   fi
 
-  eval "$cmd"
+  # Execute command safely without eval
+  "${cmd[@]}"
 }
 
 _forge_label_create_gitea() {
@@ -98,17 +100,19 @@ _forge_label_create_gitea() {
   local color="$3"
   local description="$4"
 
-  local cmd="tea labels create --name \"$name\" --color \"$color\""
+  # Build command as array to avoid eval
+  local cmd=(tea labels create --name "$name" --color "$color")
 
   if [[ -n "$repo" ]]; then
-    cmd="$cmd --repo $repo"
+    cmd+=(--repo "$repo")
   fi
 
   if [[ -n "$description" ]]; then
-    cmd="$cmd --description \"$description\""
+    cmd+=(--description "$description")
   fi
 
-  eval "$cmd"
+  # Execute command safely without eval
+  "${cmd[@]}"
 }
 
 # 如果直接執行此腳本

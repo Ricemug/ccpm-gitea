@@ -68,24 +68,25 @@ _forge_issue_list_github() {
   local labels="$3"
   local format="$4"
 
-  local cmd="gh issue list --state $state"
+  # Build command as array to avoid eval
+  local cmd=(gh issue list --state "$state")
 
   if [[ -n "$repo" ]]; then
-    cmd="$cmd --repo $repo"
+    cmd+=(--repo "$repo")
   fi
 
   if [[ -n "$labels" ]]; then
-    cmd="$cmd --label $labels"
+    cmd+=(--label "$labels")
   fi
 
-  # GitHub CLI 輸出 JSON
-  cmd="$cmd --json number,title,state,labels,milestone,body,url,createdAt,updatedAt,author,comments"
+  # GitHub CLI outputs JSON
+  cmd+=(--json number,title,state,labels,milestone,body,url,createdAt,updatedAt,author,comments)
 
   if [[ "$format" == "yaml" ]]; then
-    # 轉換 JSON 到 YAML (使用 python 或其他工具)
-    eval "$cmd" | python3 -c 'import sys, yaml, json; print(yaml.dump(json.load(sys.stdin), default_flow_style=False))' 2>/dev/null || eval "$cmd"
+    # Convert JSON to YAML
+    "${cmd[@]}" | python3 -c 'import sys, yaml, json; print(yaml.dump(json.load(sys.stdin), default_flow_style=False))' 2>/dev/null || "${cmd[@]}"
   else
-    eval "$cmd"
+    "${cmd[@]}"
   fi
 }
 
@@ -95,25 +96,26 @@ _forge_issue_list_gitea() {
   local labels="$3"
   local format="$4"
 
-  local cmd="tea issues list --state $state --output yaml"
+  # Build command as array to avoid eval
+  local cmd=(tea issues list --state "$state" --output yaml)
 
   if [[ -n "$repo" ]]; then
-    cmd="$cmd --repo $repo"
+    cmd+=(--repo "$repo")
   fi
 
   if [[ -n "$labels" ]]; then
-    # Gitea 使用 --labels (複數)
-    cmd="$cmd --labels $labels"
+    # Gitea uses --labels (plural)
+    cmd+=(--labels "$labels")
   fi
 
-  # 指定輸出欄位
-  cmd="$cmd --fields index,title,state,labels,milestone,body,url,created,updated,author,comments"
+  # Specify output fields
+  cmd+=(--fields index,title,state,labels,milestone,body,url,created,updated,author,comments)
 
   if [[ "$format" == "json" ]]; then
-    # 轉換 YAML 到 JSON (使用 python 或其他工具)
-    eval "$cmd" | python3 -c 'import sys, yaml, json; print(json.dumps(yaml.safe_load(sys.stdin)))' 2>/dev/null || eval "$cmd"
+    # Convert YAML to JSON
+    "${cmd[@]}" | python3 -c 'import sys, yaml, json; print(json.dumps(yaml.safe_load(sys.stdin)))' 2>/dev/null || "${cmd[@]}"
   else
-    eval "$cmd"
+    "${cmd[@]}"
   fi
 }
 
