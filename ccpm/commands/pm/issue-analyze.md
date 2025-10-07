@@ -38,7 +38,7 @@ Get issue details from forge:
 ```bash
 source .claude/scripts/forge/issue-list.sh
 # GitHub uses "number:", Gitea uses "index:" - match either
-forge_issue_list --state all | grep -A 10 -E "(number|index): $ARGUMENTS"
+forge_issue_list --state all | grep -A 10 -E "(number|index):[[:space:]]*${ARGUMENTS}([[:space:]]|$)"
 ```
 
 Read local task file to understand:

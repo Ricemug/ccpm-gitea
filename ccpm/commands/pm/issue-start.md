@@ -43,7 +43,7 @@ Begin work on an issue with parallel agents based on work stream analysis.
    ```bash
    source .claude/scripts/forge/issue-list.sh
    # GitHub uses "number:", Gitea uses "index:" - match either
-   forge_issue_list --state all | grep -E "(number|index): $ARGUMENTS" || echo "❌ Cannot access issue #$ARGUMENTS. Check number or authentication."
+   forge_issue_list --state all | grep -E "(number|index):[[:space:]]*${ARGUMENTS}([[:space:]]|$)" || echo "❌ Cannot access issue #$ARGUMENTS. Check number or authentication."
    ```
    If it fails: "❌ Cannot access issue #$ARGUMENTS. Run /pm:init to configure authentication."
 

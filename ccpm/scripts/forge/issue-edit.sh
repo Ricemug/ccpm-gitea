@@ -163,6 +163,12 @@ _forge_issue_edit_gitea() {
 
   # Handle state changes (Gitea requires separate close/reopen commands)
   if [[ -n "$state" ]]; then
+    # Validate state value
+    if [[ "$state" != "open" && "$state" != "closed" ]]; then
+      forge_error "Invalid state value: $state. Must be 'open' or 'closed'."
+      return 1
+    fi
+
     local state_cmd
     if [[ "$state" == "closed" ]]; then
       state_cmd=(tea issues close "$issue_number")
@@ -179,14 +185,21 @@ _forge_issue_edit_gitea() {
   fi
 
   # Handle title and body edits
-  # Note: tea CLI may support `tea issues edit` but parameters are undocumented
-  # Using a conservative approach: warn if unsupported edits are attempted
   local has_edits=false
 
   if [[ -n "$title" ]] || [[ -n "$body" ]] || [[ -n "$milestone" ]]; then
-    # Tea CLI edit support is limited - recommend manual update or API
-    forge_error "Gitea issue edit for title/body/milestone not fully supported by tea CLI. Please use Gitea web UI or API directly."
-    return 1
+    local edit_cmd=(tea issues edit "$issue_number")
+
+    [[ -n "$title" ]] && edit_cmd+=(--title "$title")
+    [[ -n "$body" ]] && edit_cmd+=(--body "$body")
+    [[ -n "$milestone" ]] && edit_cmd+=(--milestone "$milestone")
+    [[ -n "$repo" ]] && edit_cmd+=(--repo "$repo")
+
+    if ! "${edit_cmd[@]}"; then
+      forge_error "Failed to edit issue #$issue_number"
+      return 1
+    fi
+    has_edits=true
   fi
 
   # Handle label operations (tea CLI supports this according to docs)

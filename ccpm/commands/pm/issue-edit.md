@@ -26,7 +26,7 @@ forge_init || exit 1
 # Get from forge using abstraction
 source .claude/scripts/forge/issue-list.sh
 # GitHub uses "number:", Gitea uses "index:" - match either
-forge_issue_list --state all | grep -A 10 -E "(number|index): $ARGUMENTS"
+forge_issue_list --state all | grep -A 10 -E "(number|index):[[:space:]]*${ARGUMENTS}([[:space:]]|$)"
 
 # Find local task file
 # Search for file with github:.*issues/$ARGUMENTS

@@ -27,7 +27,7 @@ forge_init || exit 1
   ```bash
   source .claude/scripts/forge/issue-list.sh
   # GitHub uses "number:", Gitea uses "index:" - match either
-  forge_issue_list --state all | grep -A 15 -E "(number|index): $ARGUMENTS"
+  forge_issue_list --state all | grep -A 15 -E "(number|index):[[:space:]]*${ARGUMENTS}([[:space:]]|$)"
   ```
 - Look for local task file: first check `.claude/epics/*/$ARGUMENTS.md` (new naming)
 - If not found, search for file with `github:.*issues/$ARGUMENTS` in frontmatter (old naming)
