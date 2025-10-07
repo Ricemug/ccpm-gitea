@@ -4,23 +4,41 @@
 
 ### Unix/Linux/macOS
 
+**Option 1: Using GitHub (Recommended)**
+
 ```bash
 cd your-project/
-curl -sSL https://automaze.io/ccpm/install | bash
+curl -sSL https://raw.githubusercontent.com/automazeio/ccpm/main/install/ccpm.sh | bash
 ```
 
 Or with wget:
 
 ```bash
 cd your-project/
-wget -qO- https://automaze.io/ccpm/install | bash
+wget -qO- https://raw.githubusercontent.com/automazeio/ccpm/main/install/ccpm.sh | bash
+```
+
+**Option 2: Using automaze.io**
+
+```bash
+cd your-project/
+curl -sSL https://automaze.io/ccpm/install | bash
+```
+
+⚠️ **Note**: If the automaze.io URL fails (see [#961](https://github.com/automazeio/ccpm/issues/961), [#966](https://github.com/automazeio/ccpm/issues/966)), use Option 1 or the manual installation below.
+
+### Windows (cmd)
+
+```cmd
+cd your-project\
+curl -sSL https://raw.githubusercontent.com/automazeio/ccpm/main/install/ccpm.bat -o install-ccpm.bat && install-ccpm.bat && del install-ccpm.bat
 ```
 
 ### Windows (PowerShell)
 
 ```powershell
 cd your-project/
-iwr -useb https://automaze.io/ccpm/install | iex
+iwr -useb https://raw.githubusercontent.com/automazeio/ccpm/main/install/ccpm.bat -OutFile install-ccpm.bat; .\install-ccpm.bat; Remove-Item install-ccpm.bat
 ```
 
 ---
