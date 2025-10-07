@@ -178,16 +178,46 @@ _forge_issue_edit_gitea() {
     "${state_cmd[@]}"
   fi
 
-  # Gitea tea CLI 沒有統一的 edit 指令，需要使用 API 或分開處理
-  # 這裡簡化處理：只支援 add-labels
-  if [[ -n "$add_labels" ]]; then
-    # 注意：tea 可能需要使用不同的方式來編輯 labels
-    # 這裡假設使用 API 或其他方式
-    forge_error "Gitea issue edit (labels) not fully implemented yet"
+  # Handle title and body edits
+  # Note: tea CLI may support `tea issues edit` but parameters are undocumented
+  # Using a conservative approach: warn if unsupported edits are attempted
+  local has_edits=false
+
+  if [[ -n "$title" ]] || [[ -n "$body" ]] || [[ -n "$milestone" ]]; then
+    # Tea CLI edit support is limited - recommend manual update or API
+    forge_error "Gitea issue edit for title/body/milestone not fully supported by tea CLI. Please use Gitea web UI or API directly."
+    return 1
   fi
 
-  # TODO: 實作完整的 Gitea issue edit 功能
-  # 可能需要使用 Gitea API
+  # Handle label operations (tea CLI supports this according to docs)
+  if [[ -n "$add_labels" ]]; then
+    local add_cmd=(tea issues edit "$issue_number" --add-labels "$add_labels")
+    if [[ -n "$repo" ]]; then
+      add_cmd+=(--repo "$repo")
+    fi
+    "${add_cmd[@]}" || {
+      forge_error "Failed to add labels to issue #$issue_number"
+      return 1
+    }
+    has_edits=true
+  fi
+
+  if [[ -n "$remove_labels" ]]; then
+    local remove_cmd=(tea issues edit "$issue_number" --remove-labels "$remove_labels")
+    if [[ -n "$repo" ]]; then
+      remove_cmd+=(--repo "$repo")
+    fi
+    "${remove_cmd[@]}" || {
+      forge_error "Failed to remove labels from issue #$issue_number"
+      return 1
+    }
+    has_edits=true
+  fi
+
+  # Return success if we processed any edits or state changes
+  if [[ "$has_edits" == "true" ]] || [[ -n "$state" ]]; then
+    return 0
+  fi
 }
 
 # 如果直接執行此腳本
