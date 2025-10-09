@@ -24,13 +24,25 @@ forge_init() {
   export FORGE_TYPE
 
   # Check if tea CLI is installed
-  if ! command -v tea &>/dev/null; then
-    echo "Error: Gitea CLI (tea) is not installed" >&2
-    echo "Install: brew install tea (macOS) or download from https://gitea.com/gitea/tea" >&2
-    return 1
+  # First try standard PATH
+  if command -v tea &>/dev/null; then
+    return 0
   fi
 
-  return 0
+  # On macOS, check Homebrew paths (may not be in PATH for non-interactive shells)
+  if [[ -x "/opt/homebrew/bin/tea" ]]; then
+    # Add to PATH for this session
+    export PATH="/opt/homebrew/bin:$PATH"
+    return 0
+  elif [[ -x "/usr/local/bin/tea" ]]; then
+    export PATH="/usr/local/bin:$PATH"
+    return 0
+  fi
+
+  # Not found anywhere
+  echo "Error: Gitea CLI (tea) is not installed" >&2
+  echo "Install: brew install tea (macOS) or download from https://gitea.com/gitea/tea" >&2
+  return 1
 }
 
 # Parse labels string to array (Gitea returns space-separated string)
