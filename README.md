@@ -1,23 +1,21 @@
-# Claude Code PM
+# Claude Code PM - Gitea Only Edition
+
+> 🔧 **Gitea-Only Version**: This fork only supports Gitea. For the original version with both GitHub and Gitea support, visit [automazeio/ccpm](https://github.com/automazeio/ccpm).
 
 [![Automaze](https://img.shields.io/badge/By-automaze.io-4b3baf)](https://automaze.io)
 &nbsp;
 [![Claude Code](https://img.shields.io/badge/+-Claude%20Code-d97757)](https://github.com/automazeio/ccpm/blob/main/README.md)
-[![GitHub Issues](https://img.shields.io/badge/+-GitHub%20Issues-1f2328)](https://github.com/automazeio/ccpm)
-&nbsp;
-[![Mentioned in Awesome Claude Code](https://awesome.re/mentioned-badge.svg)](https://github.com/hesreallyhim/awesome-claude-code?tab=readme-ov-file#general-)
+[![Gitea Issues](https://img.shields.io/badge/+-Gitea%20Issues-609926)](https://gitea.com)
 &nbsp;
 [![MIT License](https://img.shields.io/badge/License-MIT-28a745)](https://github.com/automazeio/ccpm/blob/main/LICENSE)
 &nbsp;
 [![Follow on 𝕏](https://img.shields.io/badge/𝕏-@aroussi-1c9bf0)](http://x.com/intent/follow?screen_name=aroussi)
-&nbsp;
-[![Star this repo](https://img.shields.io/github/stars/automazeio/ccpm.svg?style=social&label=Star%20this%20repo&maxAge=60)](https://github.com/automazeio/ccpm)
 
-### Claude Code workflow to ship ~~faster~~ _better_ using spec-driven development, GitHub/Gitea issues, Git worktrees, and multiple AI agents running in parallel.
+### Claude Code workflow to ship ~~faster~~ _better_ using spec-driven development, Gitea issues, Git worktrees, and multiple AI agents running in parallel.
 
 **[繁體中文文檔 (Traditional Chinese)](README-TW.md)** | **[简体中文文档 (Simplified Chinese)](zh-docs/README_ZH.md)**
 
-Stop losing context. Stop blocking on tasks. Stop shipping bugs. This battle-tested system turns PRDs into epics, epics into GitHub issues, and issues into production code – with full traceability at every step.
+Stop losing context. Stop blocking on tasks. Stop shipping bugs. This battle-tested system turns PRDs into epics, epics into Gitea issues, and issues into production code – with full traceability at every step.
 
 ![Claude Code PM](screenshot.webp)
 
@@ -386,39 +384,47 @@ Teams using this system report:
 
 ### Quick Setup (2 minutes)
 
-1. **Install this repository into your project**:
+> 📌 **Note**: This is the **Gitea-only version** of CCPM. It only supports Gitea and does not include GitHub support. For the full version with both GitHub and Gitea support, visit [automazeio/ccpm](https://github.com/automazeio/ccpm).
 
-   #### Unix/Linux/macOS
+#### Installation Steps
+
+1. **Clone this repository into your project**:
 
    ```bash
    cd path/to/your/project/
-   curl -sSL https://automaze.io/ccpm/install | bash
-   # or: wget -qO- https://automaze.io/ccpm/install | bash
+   git clone https://github.com/YOUR_USERNAME/ccpm-forge.git temp-ccpm
+   cp -r temp-ccpm/ccpm .claude
+   rm -rf temp-ccpm
    ```
 
-   #### Windows (PowerShell)
+   Or if you prefer to keep it as a submodule:
+
    ```bash
    cd path/to/your/project/
-   iwr -useb https://automaze.io/ccpm/install | iex
+   git submodule add https://github.com/YOUR_USERNAME/ccpm-forge.git ccpm-forge
+   cp -r ccpm-forge/ccpm .claude
    ```
-   > ⚠️ **IMPORTANT**: If you already have a `.claude` directory, clone this repository to a different directory and copy the contents of the cloned `.claude` directory to your project's `.claude` directory.
 
-   See full/other installation options in the [installation guide ›](https://github.com/automazeio/ccpm/tree/main/install)
-
+   > ⚠️ **IMPORTANT**:
+   > - The `ccpm/` directory contains the template files
+   > - You need to copy it to `.claude/` in your project
+   > - If you already have a `.claude` directory, backup it first
 
 2. **Initialize the PM system**:
    ```bash
    /pm:init
    ```
    This command will:
-   - Detect your Git forge (GitHub or Gitea)
-   - Let you choose forge type (GitHub, Gitea, or auto-detect)
-   - Install required CLI tools:
-     - **GitHub**: Install GitHub CLI and [gh-sub-issue extension](https://github.com/yahsan2/gh-sub-issue) for proper parent-child relationships
-     - **Gitea**: Install Gitea CLI (tea) - uses task lists instead of sub-issues
-   - Authenticate with your chosen forge
+   - Check for Gitea CLI (tea) and install if needed
+   - Verify authentication with your Gitea instance
    - Create required directories
-   - Update .gitignore
+   - Set up labels in your repository
+
+   > 💡 **Authentication**: You need to configure tea CLI first:
+   > ```bash
+   > tea login add --name myserver --url https://your-gitea.com --token YOUR_TOKEN
+   > ```
+   > Get your token from: Gitea Settings → Applications → Generate New Token
 
 3. **Create `CLAUDE.md`** with your repository information
    ```bash

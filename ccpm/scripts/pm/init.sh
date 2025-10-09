@@ -89,6 +89,7 @@ fi
 export FORGE_TYPE
 
 # Save forge type to config file for future use
+# Note: .claude directory should already exist (created during installation)
 echo "$FORGE_TYPE" > .claude/.forge_type
 echo "  💾 Saved forge type to .claude/.forge_type"
 echo ""
