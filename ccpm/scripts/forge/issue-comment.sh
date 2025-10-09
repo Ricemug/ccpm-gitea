@@ -1,29 +1,29 @@
 #!/usr/bin/env bash
-# forge/issue-comment.sh - 統一的 issue 評論介面
+# forge/issue-comment.sh - Gitea issue commenting
 #
-# 使用方式:
+# Usage:
 #   forge_issue_comment ISSUE_NUMBER --body "comment text" [options]
 #
-# 選項:
-#   --repo REPO     指定 repository (選填)
-#   --body BODY     評論內容 (必填)
+# Options:
+#   --repo REPO     Repository (optional)
+#   --body BODY     Comment body (required)
 #
-# 回傳: 成功或失敗
+# Returns: Success or failure
 
-# 載入配置
+# Load config
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/config.sh"
 
 forge_issue_comment() {
-  # 初始化
+  # Initialize
   forge_init || return 1
 
-  # 參數解析
+  # Parse parameters
   local issue_number=""
   local repo=""
   local body=""
 
-  # 第一個參數是 issue number
+  # First parameter is issue number
   if [[ $# -gt 0 ]] && [[ ! "$1" =~ ^-- ]]; then
     issue_number="$1"
     shift
@@ -46,7 +46,7 @@ forge_issue_comment() {
     esac
   done
 
-  # 驗證必填參數
+  # Validate required parameters
   if [[ -z "$issue_number" ]]; then
     forge_error "Issue number is required"
     return 1
@@ -57,62 +57,18 @@ forge_issue_comment() {
     return 1
   fi
 
-  # 根據 forge 類型執行對應指令
-  if [[ "$FORGE_TYPE" == "github" ]]; then
-    _forge_issue_comment_github "$issue_number" "$repo" "$body"
-  elif [[ "$FORGE_TYPE" == "gitea" ]]; then
-    _forge_issue_comment_gitea "$issue_number" "$repo" "$body"
-  else
-    forge_error "Unsupported forge type: $FORGE_TYPE"
-    return 1
-  fi
-}
-
-_forge_issue_comment_github() {
-  local issue_number="$1"
-  local repo="$2"
-  local body="$3"
-
-  # Write body to temp file to avoid command injection and preserve formatting
-  local temp_file
-  temp_file=$(mktemp) || return 1
-  printf '%s' "$body" > "$temp_file"
-
-  # Build command as array to avoid eval
-  local args=(gh issue comment "$issue_number" --body-file "$temp_file")
+  # Build tea command
+  local cmd=(tea issues comment "$issue_number" "$body")
 
   if [[ -n "$repo" ]]; then
-    args+=(--repo "$repo")
+    cmd+=(--repo "$repo")
   fi
 
-  # Execute command safely
-  "${args[@]}"
-  local exit_code=$?
-
-  # Clean up temp file
-  rm -f "$temp_file"
-
-  return $exit_code
+  # Execute command
+  "${cmd[@]}"
 }
 
-_forge_issue_comment_gitea() {
-  local issue_number="$1"
-  local repo="$2"
-  local body="$3"
-
-  # tea comment syntax: tea comment <issue> <body>
-  # Build command as array to avoid eval and preserve special characters
-  local args=(tea comment "$issue_number" "$body")
-
-  if [[ -n "$repo" ]]; then
-    args+=(--repo "$repo")
-  fi
-
-  # Execute command safely without eval
-  "${args[@]}"
-}
-
-# 如果直接執行此腳本
+# If run directly
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
   forge_issue_comment "$@"
 fi

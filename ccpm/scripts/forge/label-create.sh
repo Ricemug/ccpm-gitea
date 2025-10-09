@@ -1,26 +1,26 @@
 #!/usr/bin/env bash
-# forge/label-create.sh - 統一的 label 建立介面
+# forge/label-create.sh - Gitea label creation
 #
-# 使用方式:
+# Usage:
 #   forge_label_create --name "label-name" --color "#ffffff" [options]
 #
-# 選項:
-#   --repo REPO           指定 repository (選填)
-#   --name NAME           Label 名稱 (必填)
-#   --color COLOR         Label 顏色 (hex color，必填)
-#   --description DESC    Label 說明 (選填)
+# Options:
+#   --repo REPO           Repository (optional)
+#   --name NAME           Label name (required)
+#   --color COLOR         Label color (hex color, required)
+#   --description DESC    Label description (optional)
 #
-# 回傳: 成功或失敗
+# Returns: Success or failure
 
-# 載入配置
+# Load config
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/config.sh"
 
 forge_label_create() {
-  # 初始化
+  # Initialize
   forge_init || return 1
 
-  # 參數解析
+  # Parse parameters
   local repo=""
   local name=""
   local color=""
@@ -51,7 +51,7 @@ forge_label_create() {
     esac
   done
 
-  # 驗證必填參數
+  # Validate required parameters
   if [[ -z "$name" ]]; then
     forge_error "Label name is required (--name)"
     return 1
@@ -62,45 +62,7 @@ forge_label_create() {
     return 1
   fi
 
-  # 根據 forge 類型執行對應指令
-  if [[ "$FORGE_TYPE" == "github" ]]; then
-    _forge_label_create_github "$repo" "$name" "$color" "$description"
-  elif [[ "$FORGE_TYPE" == "gitea" ]]; then
-    _forge_label_create_gitea "$repo" "$name" "$color" "$description"
-  else
-    forge_error "Unsupported forge type: $FORGE_TYPE"
-    return 1
-  fi
-}
-
-_forge_label_create_github() {
-  local repo="$1"
-  local name="$2"
-  local color="$3"
-  local description="$4"
-
-  # Build command as array to avoid eval
-  local cmd=(gh label create "$name" --color "$color")
-
-  if [[ -n "$repo" ]]; then
-    cmd+=(--repo "$repo")
-  fi
-
-  if [[ -n "$description" ]]; then
-    cmd+=(--description "$description")
-  fi
-
-  # Execute command safely without eval
-  "${cmd[@]}"
-}
-
-_forge_label_create_gitea() {
-  local repo="$1"
-  local name="$2"
-  local color="$3"
-  local description="$4"
-
-  # Build command as array to avoid eval
+  # Build tea command
   local cmd=(tea labels create --name "$name" --color "$color")
 
   if [[ -n "$repo" ]]; then
@@ -111,11 +73,11 @@ _forge_label_create_gitea() {
     cmd+=(--description "$description")
   fi
 
-  # Execute command safely without eval
+  # Execute command
   "${cmd[@]}"
 }
 
-# 如果直接執行此腳本
+# If run directly
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
   forge_label_create "$@"
 fi
