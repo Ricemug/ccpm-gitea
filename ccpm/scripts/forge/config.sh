@@ -6,8 +6,17 @@
 #   forge_init
 #   forge_issue_list
 
-# 取得當前腳本目錄
-FORGE_SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# 取得當前腳本目錄 (支援 bash 和 zsh)
+if [[ -n "${BASH_SOURCE[0]}" ]]; then
+  # Bash
+  FORGE_SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+elif [[ -n "${(%):-%x}" ]]; then
+  # Zsh
+  FORGE_SCRIPT_DIR="$(cd "$(dirname "${(%):-%x}")" && pwd)"
+else
+  # Fallback
+  FORGE_SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+fi
 
 # 初始化 forge 環境
 forge_init() {

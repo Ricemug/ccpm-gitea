@@ -46,33 +46,51 @@ fi
 
 echo "  Auto-detected: $AUTO_DETECTED"
 echo ""
-echo "Which Git forge are you using?"
-echo "  1) GitHub (default)"
-echo "  2) Gitea (self-hosted)"
-echo "  3) Use auto-detection ($AUTO_DETECTED)"
-echo ""
-read -p "Enter your choice [1]: " forge_choice
 
-case "${forge_choice:-1}" in
-  1)
-    FORGE_TYPE="github"
-    echo "  ✅ Selected: GitHub"
-    ;;
-  2)
-    FORGE_TYPE="gitea"
-    echo "  ✅ Selected: Gitea"
-    ;;
-  3)
+# Check if FORGE_TYPE is already set (non-interactive mode)
+if [[ -n "$FORGE_TYPE" ]]; then
+  echo "  ℹ️ Using pre-configured forge type: $FORGE_TYPE"
+else
+  # Interactive mode
+  echo "Which Git forge are you using?"
+  echo "  1) GitHub (default)"
+  echo "  2) Gitea (self-hosted)"
+  echo "  3) Use auto-detection ($AUTO_DETECTED)"
+  echo ""
+
+  # Check if running in non-interactive environment
+  if [[ ! -t 0 ]]; then
+    echo "  ℹ️ Non-interactive mode detected, using auto-detected: $AUTO_DETECTED"
     FORGE_TYPE="$AUTO_DETECTED"
-    echo "  ✅ Using auto-detected: $FORGE_TYPE"
-    ;;
-  *)
-    echo "  ⚠️  Invalid choice, defaulting to GitHub"
-    FORGE_TYPE="github"
-    ;;
-esac
+  else
+    read -p "Enter your choice [1]: " forge_choice
+
+    case "${forge_choice:-1}" in
+      1)
+        FORGE_TYPE="github"
+        echo "  ✅ Selected: GitHub"
+        ;;
+      2)
+        FORGE_TYPE="gitea"
+        echo "  ✅ Selected: Gitea"
+        ;;
+      3)
+        FORGE_TYPE="$AUTO_DETECTED"
+        echo "  ✅ Using auto-detected: $FORGE_TYPE"
+        ;;
+      *)
+        echo "  ⚠️  Invalid choice, defaulting to GitHub"
+        FORGE_TYPE="github"
+        ;;
+    esac
+  fi
+fi
 
 export FORGE_TYPE
+
+# Save forge type to config file for future use
+echo "$FORGE_TYPE" > .claude/.forge_type
+echo "  💾 Saved forge type to .claude/.forge_type"
 echo ""
 
 # Check for required tools based on forge type

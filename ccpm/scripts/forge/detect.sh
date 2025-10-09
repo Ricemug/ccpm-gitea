@@ -11,6 +11,12 @@
 #   "unknown" - 無法識別
 
 detect_forge() {
+  # 方法 0: 檢查已儲存的配置
+  if [[ -f ".claude/.forge_type" ]]; then
+    cat ".claude/.forge_type"
+    return 0
+  fi
+
   # 取得 git remote URL
   local remote_url
   remote_url=$(git remote get-url origin 2>/dev/null || echo "")
@@ -34,7 +40,7 @@ detect_forge() {
 
   # 方法 3: 檢查常見的 Gitea 端口 (啟發式)
   # Gitea 預設: 3000, 也常見: 53000, 8080
-  if [[ "$remote_url" =~ :3000/|:53000/|:8080/ ]]; then
+  if [[ "$remote_url" == *:3000/* ]] || [[ "$remote_url" == *:53000/* ]] || [[ "$remote_url" == *:8080/* ]]; then
     echo "gitea"
     return 0
   fi
