@@ -1,10 +1,10 @@
 # Strip Frontmatter
 
-Standard approach for removing YAML frontmatter before sending content to GitHub.
+Standard approach for removing YAML frontmatter before sending content to Gitea.
 
 ## The Problem
 
-YAML frontmatter contains internal metadata that should not appear in GitHub issues:
+YAML frontmatter contains internal metadata that should not appear in Gitea issues:
 - status, created, updated fields
 - Internal references and IDs
 - Local file paths
@@ -26,7 +26,7 @@ This removes:
 ## When to Strip Frontmatter
 
 Always strip frontmatter when:
-- Creating GitHub issues from markdown files
+- Creating Gitea issues from markdown files
 - Posting file content as comments
 - Displaying content to external users
 - Syncing to any external system
@@ -35,22 +35,25 @@ Always strip frontmatter when:
 
 ### Creating an issue from a file
 ```bash
-# Bad - includes frontmatter
-gh issue create --body-file task.md
-
-# Good - strips frontmatter and specifies repo
-remote_url=$(git remote get-url origin 2>/dev/null || echo "")
-REPO=$(echo "$remote_url" | sed 's|.*github.com[:/]||' | sed 's|\.git$||')
-[ -z "$REPO" ] && REPO="user/repo"
+# Strip frontmatter before creating issue
 sed '1,/^---$/d; 1,/^---$/d' task.md > /tmp/clean.md
-gh issue create --repo "$REPO" --body-file /tmp/clean.md
+
+# Use forge abstraction
+source .claude/scripts/forge/issue-create.sh
+forge_issue_create --title "Task" --body "$(cat /tmp/clean.md)"
+
+# Or use tea CLI directly
+tea issues create --title "Task" --description "$(cat /tmp/clean.md)"
 ```
 
 ### Posting a comment
 ```bash
 # Strip frontmatter before posting
 sed '1,/^---$/d; 1,/^---$/d' progress.md > /tmp/comment.md
-gh issue comment 123 --body-file /tmp/comment.md
+
+# Use forge abstraction
+source .claude/scripts/forge/issue-comment.sh
+forge_issue_comment 123 --body "$(cat /tmp/comment.md)"
 ```
 
 ### In a loop

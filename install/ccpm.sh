@@ -28,8 +28,9 @@ git clone "$REPO_URL" "$TEMP_DIR"
 if [ $? -eq 0 ]; then
     echo "Clone successful. Installing files..."
 
-    # Copy ccpm directory to .claude
-    cp -r "$TEMP_DIR/ccpm" "$TARGET_DIR"
+    # Create target directory and copy ccpm contents to .claude
+    mkdir -p "$TARGET_DIR"
+    cp -r "$TEMP_DIR/ccpm"/* "$TARGET_DIR"/
 
     # Clean up
     rm -rf "$TEMP_DIR"

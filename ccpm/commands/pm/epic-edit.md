@@ -50,22 +50,17 @@ Update epic.md:
 If epic has forge URL in frontmatter:
 Ask: "Update forge issue? (yes/no)"
 
-If yes, body updates require platform-specific handling:
+If yes:
 ```bash
-# Platform-specific body update
-if [[ "$FORGE_TYPE" == "github" ]]; then
-  gh issue edit {issue_number} --body-file .claude/epics/$ARGUMENTS/epic.md
-elif [[ "$FORGE_TYPE" == "gitea" ]]; then
-  echo "⚠️ Gitea: Body updates may require manual update via web UI"
-  # TODO: Implement if tea CLI supports body updates
-fi
+# Update issue using tea CLI
+tea issues edit {issue_number} --body "$(cat .claude/epics/$ARGUMENTS/epic.md)"
 ```
 
 ### 5. Output
 
 ```
 ✅ Updated epic: $ARGUMENTS
-  Forge: ${FORGE_TYPE}
+  Forge: Gitea
   Changes made to: {sections_edited}
 
 {If forge updated}: Forge issue updated ✅

@@ -45,39 +45,14 @@ For Gitea and fallback mode, sync task checkboxes:
 epic_issue={extract_from_github_field}
 
 if [ ! -z "$epic_issue" ]; then
-  # Only update task list if NOT using GitHub sub-issues
-  if [[ "$FORGE_TYPE" == "gitea" ]] || ! gh extension list | grep -q "yahsan2/gh-sub-issue"; then
-    # Platform-specific body update
-    if [[ "$FORGE_TYPE" == "github" ]]; then
-      gh issue view $epic_issue --json body -q .body > /tmp/epic-body.md
-
-      # For each task, check its status and update checkbox
-      for task_file in .claude/epics/$ARGUMENTS/[0-9]*.md; do
-        task_github_line=$(grep 'github:' "$task_file" 2>/dev/null || true)
-        if [ -n "$task_github_line" ]; then
-          task_issue=$(echo "$task_github_line" | grep -oE '[0-9]+$' || true)
-        else
-          task_issue=""
-        fi
-        task_status=$(grep 'status:' $task_file | cut -d: -f2 | tr -d ' ')
-
-        if [ "$task_status" = "closed" ]; then
-          perl -pi -e "s/- \[ \] #$task_issue/- [x] #$task_issue/" /tmp/epic-body.md
-        else
-          perl -pi -e "s/- \[x\] #$task_issue/- [ ] #$task_issue/" /tmp/epic-body.md
-        fi
-      done
-
-      gh issue edit $epic_issue --body-file /tmp/epic-body.md
-    elif [[ "$FORGE_TYPE" == "gitea" ]]; then
-      echo "⚠️ Gitea: Task list update may require manual verification"
-      # TODO: Implement if tea CLI supports body updates
-    fi
-  fi
+  # Update task list on Gitea
+  echo "⚠️ Gitea: Task list update may require manual verification"
+  echo "  You can manually update the epic issue #$epic_issue on Gitea"
+  echo "  Or use: tea issues edit $epic_issue --body-file .claude/epics/$ARGUMENTS/epic.md"
 fi
 ```
 
-**Note:** GitHub with gh-sub-issue automatically tracks task status.
+**Note:** Gitea uses task lists in issue bodies for epic tracking.
 
 ### 4. Determine Epic Status
 

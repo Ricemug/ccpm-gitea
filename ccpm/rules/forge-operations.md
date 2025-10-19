@@ -1,10 +1,10 @@
-# Git Forge Operations Rule
+# Gitea Operations Rule
 
-Standard patterns for Git Forge operations across all commands. Supports both GitHub and Gitea.
+Standard patterns for Gitea operations across all commands.
 
 ## CRITICAL: Repository Protection
 
-**Before ANY forge operation that creates/modifies issues or PRs:**
+**Before ANY operation that creates/modifies issues or PRs:**
 
 ```bash
 # Check if remote origin is the CCPM template repository
@@ -16,9 +16,9 @@ if [[ "$remote_url" == *"automazeio/ccpm"* ]] || [[ "$remote_url" == *"automazei
   echo "You should NOT create issues or PRs here."
   echo ""
   echo "To fix this:"
-  echo "  1. Fork this repository to your own account"
+  echo "  1. Create your own repository on your Gitea instance"
   echo "  2. Update your remote origin:"
-  echo "     git remote set-url origin <your-repo-url>"
+  echo "     git remote set-url origin <your-gitea-repo-url>"
   echo ""
   echo "Current remote: $remote_url"
   exit 1
@@ -32,7 +32,7 @@ This check MUST be performed in ALL commands that:
 - Create PRs
 - Any other operation that modifies the repository
 
-## Forge Detection & Initialization
+## Forge Initialization
 
 **Always use the forge abstraction layer:**
 
@@ -41,10 +41,8 @@ This check MUST be performed in ALL commands that:
 SCRIPT_DIR=".claude/scripts/forge"
 source "$SCRIPT_DIR/config.sh"
 
-# Initialize and detect forge type
+# Initialize (checks for tea CLI)
 forge_init || exit 1
-
-# FORGE_TYPE is now set to "github" or "gitea"
 ```
 
 ## Authentication
@@ -53,7 +51,8 @@ forge_init || exit 1
 
 ```bash
 # The forge scripts handle authentication internally
-# If authentication fails, they will provide appropriate error messages
+# If authentication fails, they will provide error messages
+# User should run: tea login add --name <name> --url <url> --token <token>
 ```
 
 ## Common Operations
@@ -62,17 +61,13 @@ forge_init || exit 1
 
 Use forge abstraction:
 ```bash
-# This works for both GitHub and Gitea
+# Works with Gitea
 source .claude/scripts/forge/issue-list.sh
 forge_issue_list --state all | grep "index: $ISSUE_NUMBER"
 ```
 
-Or use native CLI directly (not recommended):
+Or use tea CLI directly (not recommended):
 ```bash
-# GitHub
-gh issue view {number} --json state,title,labels,body
-
-# Gitea
 tea issues list --output yaml | grep -A 10 "index: {number}"
 ```
 
@@ -90,10 +85,6 @@ forge_issue_create \
 
 Native CLI (for reference only):
 ```bash
-# GitHub
-gh issue create --title "{title}" --body-file {file} --label "{labels}"
-
-# Gitea
 tea issues create --title "{title}" --description "{body}" --labels "{labels}"
 ```
 
@@ -109,12 +100,9 @@ forge_issue_edit {number} \
 
 Native CLI (for reference only):
 ```bash
-# GitHub
-gh issue edit {number} --add-label "{label}" --add-assignee @me
-
-# Gitea
 tea issues close {number}
 tea issues reopen {number}
+tea issues edit {number} --add-labels "{label}"
 ```
 
 ### Add Comment
@@ -127,10 +115,6 @@ forge_issue_comment {number} --body "{comment text}"
 
 Native CLI (for reference only):
 ```bash
-# GitHub
-gh issue comment {number} --body-file {file}
-
-# Gitea
 tea comment {number} "{comment text}"
 ```
 
@@ -145,44 +129,37 @@ forge_label_create \
   --description "{description}"
 ```
 
-## Key Differences: GitHub vs Gitea
+## Task Tracking with Gitea
 
-### Sub-Issues / Task Tracking
+**Gitea uses markdown task lists for epic tracking:**
 
-**GitHub:**
-- Uses `gh-sub-issue` extension for parent-child relationships
-- Command: `gh sub-issue create --parent {epic_number} {task_file}`
-
-**Gitea:**
-- Uses markdown task lists in epic issue body
+- Epic issues contain task lists in the issue body
 - Format: `- [ ] Task: {task_title} #123`
 - Update status: Edit issue body to change `[ ]` to `[x]`
+- Task lists are checked/unchecked via web UI or API
 
-### CLI Parameter Differences
+Example epic issue body:
+```markdown
+## Epic: User Authentication
 
-| Operation | GitHub | Gitea |
-|-----------|--------|-------|
-| Issue body | `--body` | `--description` |
-| Assignees | `--assignee` | `--assignees` |
-| Labels | `--label` | `--labels` |
-| Output format | `--json` | `--output yaml` |
+### Tasks
+- [ ] #45 Implement login page
+- [x] #46 Add JWT token generation
+- [ ] #47 Create password reset flow
+```
 
 ## Error Handling
 
 If any forge operation fails:
 1. Show clear error: "❌ Forge operation failed: {operation}"
-2. Suggest fix based on forge type
+2. Suggest authentication check: `tea logins list`
 3. Don't retry automatically
 
 Example:
 ```bash
 if ! forge_issue_create --title "Test" --body "Test"; then
   echo "❌ Failed to create issue"
-  if [[ "$FORGE_TYPE" == "github" ]]; then
-    echo "Run: gh auth login"
-  else
-    echo "Check: tea logins list"
-  fi
+  echo "Check authentication: tea logins list"
   exit 1
 fi
 ```
@@ -191,14 +168,7 @@ fi
 
 - **ALWAYS** check remote origin before ANY write operation
 - **ALWAYS** use forge abstraction layer instead of direct CLI calls
-- Trust that CLIs are installed (init.sh handles this)
+- Trust that tea CLI is installed (init.sh handles this)
 - Keep operations atomic - one operation per action
 - Don't check rate limits preemptively
-- Handle YAML/JSON differences transparently via forge scripts
-
-## Migration from github-operations.md
-
-If you see code using `gh` commands directly:
-1. Replace with forge abstraction layer
-2. Update error messages to be forge-agnostic
-3. Test with both GitHub and Gitea repositories
+- Handle YAML output via forge scripts

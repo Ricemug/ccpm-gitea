@@ -27,8 +27,9 @@ git clone %REPO_URL% %TEMP_DIR%
 if %ERRORLEVEL% EQU 0 (
     echo Clone successful. Installing files...
 
-    REM Copy ccpm directory to .claude
-    xcopy /E /I /Q "%TEMP_DIR%\ccpm" "%TARGET_DIR%" >nul
+    REM Create target directory and copy ccpm contents to .claude
+    if not exist "%TARGET_DIR%" mkdir "%TARGET_DIR%"
+    xcopy /E /Y /Q "%TEMP_DIR%\ccpm\*" "%TARGET_DIR%\" >nul
 
     REM Clean up
     rmdir /s /q "%TEMP_DIR%" 2>nul

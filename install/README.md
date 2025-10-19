@@ -54,8 +54,9 @@ If you prefer manual installation or already have a `.claude` directory:
 cd your-project/
 git clone https://github.com/automazeio/ccpm.git temp-ccpm
 
-# Copy ccpm directory to .claude
-cp -r temp-ccpm/ccpm .claude
+# Copy ccpm contents to .claude
+mkdir -p .claude
+cp -r temp-ccpm/ccpm/* .claude/
 
 # Clean up
 rm -rf temp-ccpm
@@ -68,8 +69,9 @@ rm -rf temp-ccpm
 cd your-project/
 git clone https://github.com/automazeio/ccpm.git temp-ccpm
 
-# Copy ccpm directory to .claude
-Copy-Item -Recurse temp-ccpm/ccpm .claude
+# Copy ccpm contents to .claude
+New-Item -ItemType Directory -Force -Path .claude
+Copy-Item -Recurse temp-ccpm/ccpm/* .claude/
 
 # Clean up
 Remove-Item -Recurse -Force temp-ccpm
@@ -82,8 +84,9 @@ REM Clone to temporary directory
 cd your-project\
 git clone https://github.com/automazeio/ccpm.git temp-ccpm
 
-REM Copy ccpm directory to .claude
-xcopy /E /I temp-ccpm\ccpm .claude
+REM Copy ccpm contents to .claude
+if not exist .claude mkdir .claude
+xcopy /E /Y temp-ccpm\ccpm\* .claude\
 
 REM Clean up
 rmdir /s /q temp-ccpm

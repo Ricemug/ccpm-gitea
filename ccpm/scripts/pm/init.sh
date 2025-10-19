@@ -18,75 +18,20 @@ echo "https://github.com/automazeio/ccpm"
 echo ""
 echo ""
 
-echo "🚀 Initializing Claude Code PM System"
-echo "======================================"
+echo "🚀 Initializing Claude Code PM System (Gitea Edition)"
+echo "======================================================"
 echo ""
 
 # Get script directory for finding forge scripts
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 FORGE_DIR="$SCRIPT_DIR/forge"
 
-# Detect Git Forge platform
-echo "🔍 Detecting Git Forge platform..."
-
-# Check if we're in a git repository
-if ! git rev-parse --git-dir > /dev/null 2>&1; then
-  echo "  ⚠️ Not a git repository. Defaulting to GitHub."
-  AUTO_DETECTED="github"
-else
-  # Use forge detection
-  if [ -f "$FORGE_DIR/detect.sh" ]; then
-    source "$FORGE_DIR/detect.sh"
-    AUTO_DETECTED=$(detect_forge)
-  else
-    echo "  ⚠️ Forge detection script not found. Defaulting to GitHub."
-    AUTO_DETECTED="github"
-  fi
-fi
-
-echo "  Auto-detected: $AUTO_DETECTED"
-echo ""
-
-# Check if FORGE_TYPE is already set (non-interactive mode)
-if [[ -n "$FORGE_TYPE" ]]; then
-  echo "  ℹ️ Using pre-configured forge type: $FORGE_TYPE"
-else
-  # Interactive mode
-  echo "Which Git forge are you using?"
-  echo "  1) GitHub (default)"
-  echo "  2) Gitea (self-hosted)"
-  echo "  3) Use auto-detection ($AUTO_DETECTED)"
-  echo ""
-
-  # Check if running in non-interactive environment
-  if [[ ! -t 0 ]]; then
-    echo "  ℹ️ Non-interactive mode detected, using auto-detected: $AUTO_DETECTED"
-    FORGE_TYPE="$AUTO_DETECTED"
-  else
-    read -p "Enter your choice [1]: " forge_choice
-
-    case "${forge_choice:-1}" in
-      1)
-        FORGE_TYPE="github"
-        echo "  ✅ Selected: GitHub"
-        ;;
-      2)
-        FORGE_TYPE="gitea"
-        echo "  ✅ Selected: Gitea"
-        ;;
-      3)
-        FORGE_TYPE="$AUTO_DETECTED"
-        echo "  ✅ Using auto-detected: $FORGE_TYPE"
-        ;;
-      *)
-        echo "  ⚠️  Invalid choice, defaulting to GitHub"
-        FORGE_TYPE="github"
-        ;;
-    esac
-  fi
-fi
-
+# Always use Gitea
+FORGE_TYPE="gitea"
 export FORGE_TYPE
+
+echo "🔍 Git Forge platform: Gitea"
+echo ""
 
 # Save forge type to config file for future use
 # Note: .claude directory should already exist (created during installation)
@@ -94,52 +39,20 @@ echo "$FORGE_TYPE" > .claude/.forge_type
 echo "  💾 Saved forge type to .claude/.forge_type"
 echo ""
 
-# Check for required tools based on forge type
+# Check for required tools
 echo "🔍 Checking dependencies..."
 
-if [[ "$FORGE_TYPE" == "github" ]]; then
-  # Check gh CLI
-  if command -v gh &> /dev/null; then
-    echo "  ✅ GitHub CLI (gh) installed"
-  else
-    echo "  ❌ GitHub CLI (gh) not found"
-    echo ""
-    echo "  Installing gh..."
-    if command -v brew &> /dev/null; then
-      brew install gh
-    elif command -v apt-get &> /dev/null; then
-      sudo apt-get update && sudo apt-get install gh
-    else
-      echo "  Please install GitHub CLI manually: https://cli.github.com/"
-      exit 1
-    fi
-  fi
-
-  # Check gh auth status
-  echo ""
-  echo "🔐 Checking GitHub authentication..."
-  if gh auth status &> /dev/null; then
-    echo "  ✅ GitHub authenticated"
-  else
-    echo "  ⚠️ GitHub not authenticated"
-    echo "  Running: gh auth login"
-    gh auth login
-  fi
-
-  # Check for gh-sub-issue extension
-  echo ""
-  echo "📦 Checking gh extensions..."
-  if gh extension list | grep -q "yahsan2/gh-sub-issue"; then
-    echo "  ✅ gh-sub-issue extension installed"
-  else
-    echo "  📥 Installing gh-sub-issue extension..."
-    gh extension install yahsan2/gh-sub-issue
-  fi
-
-elif [[ "$FORGE_TYPE" == "gitea" ]]; then
-  # Check tea CLI
-  if command -v tea &> /dev/null; then
-    echo "  ✅ Gitea CLI (tea) installed"
+# Check tea CLI
+if command -v tea &> /dev/null; then
+  echo "  ✅ Gitea CLI (tea) installed"
+else
+  # Check Homebrew paths (may not be in PATH for non-interactive shells)
+  if [[ -x "/opt/homebrew/bin/tea" ]]; then
+    export PATH="/opt/homebrew/bin:$PATH"
+    echo "  ✅ Gitea CLI (tea) found at /opt/homebrew/bin/tea"
+  elif [[ -x "/usr/local/bin/tea" ]]; then
+    export PATH="/usr/local/bin:$PATH"
+    echo "  ✅ Gitea CLI (tea) found at /usr/local/bin/tea"
   else
     echo "  ❌ Gitea CLI (tea) not found"
     echo ""
@@ -169,35 +82,36 @@ elif [[ "$FORGE_TYPE" == "gitea" ]]; then
     else
       echo "  ⚠️ Unsupported platform. Please install tea CLI manually:"
       echo "     https://gitea.com/gitea/tea"
+      echo "     Or use Homebrew: brew install tea"
       exit 1
     fi
   fi
+fi
 
-  # Check tea logins
+# Check tea logins
+echo ""
+echo "🔐 Checking Gitea authentication..."
+if tea logins list &> /dev/null && [ "$(tea logins list | wc -l)" -gt 0 ]; then
+  echo "  ✅ Gitea authenticated"
+else
+  echo "  ⚠️ Gitea not authenticated"
   echo ""
-  echo "🔐 Checking Gitea authentication..."
-  if tea logins list &> /dev/null && [ "$(tea logins list | wc -l)" -gt 0 ]; then
-    echo "  ✅ Gitea authenticated"
-  else
-    echo "  ⚠️ Gitea not authenticated"
-    echo ""
-    echo "  To authenticate with Gitea:"
-    echo "  1. Create an API token in your Gitea instance:"
-    echo "     Settings → Applications → Generate New Token"
-    echo "  2. Required scopes: read:user, write:repository, write:issue"
-    echo "  3. Run: tea login add --name <name> --url <gitea-url> --token <token>"
-    echo ""
-    echo "  Example:"
-    echo "  tea login add --name myserver --url https://gitea.example.com --token abc123"
-    echo ""
-  fi
-
-  # Info about gh-sub-issue alternative
+  echo "  To authenticate with Gitea:"
+  echo "  1. Create an API token in your Gitea instance:"
+  echo "     Settings → Applications → Generate New Token"
+  echo "  2. Required scopes: read:user, write:repository, write:issue"
+  echo "  3. Run: tea login add --name <name> --url <gitea-url> --token <token>"
   echo ""
-  echo "ℹ️  Note: Gitea uses task lists instead of sub-issues"
-  echo "  Epic issues will use markdown task lists: - [ ] Task #123"
+  echo "  Example:"
+  echo "  tea login add --name myserver --url https://gitea.example.com --token abc123"
   echo ""
 fi
+
+# Info about task lists
+echo ""
+echo "ℹ️  Note: Gitea uses task lists for epic issues"
+echo "  Epic issues will use markdown task lists: - [ ] Task #123"
+echo ""
 
 # Create directory structure
 echo ""
@@ -246,7 +160,7 @@ if git rev-parse --git-dir > /dev/null 2>&1; then
       echo "  This means any issues you create will go to the template repo, not your project."
       echo ""
       echo "  To fix this:"
-      echo "  1. Fork the repository or create your own on your Git Forge"
+      echo "  1. Create your own repository on your Gitea instance"
       echo "  2. Update your remote:"
       echo "     git remote set-url origin <your-repo-url>"
       echo ""
@@ -322,14 +236,8 @@ echo "✅ Initialization Complete!"
 echo "=========================="
 echo ""
 echo "📊 System Status:"
-if [[ "$FORGE_TYPE" == "github" ]]; then
-  gh --version | head -1
-  echo "  Extensions: $(gh extension list | wc -l) installed"
-  echo "  Auth: $(gh auth status 2>&1 | grep -o 'Logged in to [^ ]*' || echo 'Not authenticated')"
-elif [[ "$FORGE_TYPE" == "gitea" ]]; then
-  tea --version | head -1
-  echo "  Logins: $(tea logins list 2>/dev/null | wc -l) configured"
-fi
+tea --version | head -1
+echo "  Logins: $(tea logins list 2>/dev/null | wc -l) configured"
 echo "  Forge Type: $FORGE_TYPE"
 echo ""
 echo "🎯 Next Steps:"

@@ -74,24 +74,14 @@ epic_name={extract_from_path}
 epic_issue=$(grep 'github:' .claude/epics/$epic_name/epic.md | grep -oE '[0-9]+$')
 
 if [ ! -z "$epic_issue" ]; then
-  # Only update task list if NOT using GitHub sub-issues
-  if [[ "$FORGE_TYPE" == "gitea" ]] || ! gh extension list | grep -q "yahsan2/gh-sub-issue"; then
-    # Platform-specific body update
-    # Note: This requires platform-specific handling until forge abstraction supports body updates
-    if [[ "$FORGE_TYPE" == "github" ]]; then
-      gh issue view $epic_issue --json body -q .body > /tmp/epic-body.md
-      perl -pi -e "s/- \[ \] #$ARGUMENTS/- [x] #$ARGUMENTS/" /tmp/epic-body.md
-      gh issue edit $epic_issue --body-file /tmp/epic-body.md
-      echo "✓ Updated epic progress on GitHub"
-    elif [[ "$FORGE_TYPE" == "gitea" ]]; then
-      echo "⚠️ Gitea: Epic task list update may require manual verification"
-      # TODO: Implement tea CLI body update if supported
-    fi
-  fi
+  # Update task list on Gitea
+  echo "⚠️ Gitea: Epic task list update may require manual verification"
+  echo "  Please check issue #$epic_issue and mark task #$ARGUMENTS as complete"
+  echo "  Or update the epic.md file and use: /pm:epic-refresh"
 fi
 ```
 
-**Note:** GitHub with gh-sub-issue automatically tracks task completion.
+**Note:** Gitea uses task lists in epic issues for tracking completion.
 
 ### 6. Update Epic Progress
 

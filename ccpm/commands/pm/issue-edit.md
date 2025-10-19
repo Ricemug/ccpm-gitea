@@ -65,16 +65,14 @@ source .claude/scripts/forge/issue-edit.sh
 [ -n "{new_labels}" ] && forge_issue_edit $ARGUMENTS --add-labels "{new_labels}"
 ```
 
-Note: Body updates require platform-specific handling.
-For critical body updates, use native CLI:
-- GitHub: `gh issue edit $ARGUMENTS --body-file {file}`
-- Gitea: May require manual update via web UI
+Note: Body updates can be done using tea CLI:
+`tea issues edit $ARGUMENTS --body "$(cat {file})"`
 
 ### 5. Output
 
 ```
 ✅ Updated issue #$ARGUMENTS
-  Forge: ${FORGE_TYPE}
+  Forge: Gitea
   Changes:
     {list_of_changes_made}
 
