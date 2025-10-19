@@ -1,6 +1,11 @@
 # Claude Code PM - Gitea Only Edition
 
-> 🔧 **Gitea-Only Version**: This fork only supports Gitea. For the original version with both GitHub and Gitea support, visit [automazeio/ccpm](https://github.com/automazeio/ccpm).
+> 🔧 **Gitea-Only Version**: This is an independent fork that only supports Gitea.
+>
+> **Original Project**: [automazeio/ccpm](https://github.com/automazeio/ccpm) by [@aroussi](https://x.com/aroussi)
+> **License**: MIT (same as original)
+>
+> This version removes GitHub support and simplifies the codebase to focus exclusively on Gitea workflows.
 
 [![Automaze](https://img.shields.io/badge/By-automaze.io-4b3baf)](https://automaze.io)
 &nbsp;
@@ -388,26 +393,40 @@ Teams using this system report:
 
 #### Installation Steps
 
-1. **Clone this repository into your project**:
+**Option 1: Automated Installation (Recommended)**
 
+1. **Clone this repository into your project**:
    ```bash
    cd path/to/your/project/
-   git clone https://github.com/YOUR_USERNAME/ccpm-forge.git temp-ccpm
-   cp -r temp-ccpm/ccpm .claude
-   rm -rf temp-ccpm
+   git clone https://github.com/Ricemug/ccpm.git ccpm-gitea
    ```
 
-   Or if you prefer to keep it as a submodule:
+2. **Run the installation script**:
+   ```bash
+   cd ccpm-gitea
+   ./install.sh
+   ```
 
+   This will:
+   - Copy all CCPM files to `.claude/` directory
+   - Run the initialization automatically
+   - Set up Gitea CLI (tea) if needed
+   - Create necessary directories and labels
+
+**Option 2: Manual Installation**
+
+1. **Clone and copy files**:
    ```bash
    cd path/to/your/project/
-   git submodule add https://github.com/YOUR_USERNAME/ccpm-forge.git ccpm-forge
-   cp -r ccpm-forge/ccpm .claude
+   git clone https://github.com/Ricemug/ccpm.git temp-ccpm
+   mkdir -p .claude
+   cp -r temp-ccpm/ccpm/* .claude/
+   rm -rf temp-ccpm
    ```
 
    > ⚠️ **IMPORTANT**:
    > - The `ccpm/` directory contains the template files
-   > - You need to copy it to `.claude/` in your project
+   > - Copy the **contents** of `ccpm/` to `.claude/` (not the ccpm folder itself)
    > - If you already have a `.claude` directory, backup it first
 
 2. **Initialize the PM system**:

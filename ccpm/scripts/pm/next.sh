@@ -29,6 +29,7 @@ for epic_dir in .claude/epics/*/; do
     if [ -n "$deps_line" ]; then
       deps=$(echo "$deps_line" | sed 's/^depends_on: *//')
       deps=$(echo "$deps" | sed 's/^\[//' | sed 's/\]$//')
+      deps=$(echo "$deps" | sed 's/,/ /g')
       # Trim whitespace and handle empty cases
       deps=$(echo "$deps" | sed 's/^[[:space:]]*//' | sed 's/[[:space:]]*$//')
       [ -z "$deps" ] && deps=""
@@ -36,8 +37,28 @@ for epic_dir in .claude/epics/*/; do
       deps=""
     fi
 
-    # If no dependencies or empty, task is available
-    if [ -z "$deps" ] || [ "$deps" = "depends_on:" ]; then
+    # Check if task is ready (no dependencies or all dependencies are closed)
+    is_ready=true
+
+    if [ -n "$deps" ] && [ "$deps" != "depends_on:" ]; then
+      # Task has dependencies, check if all are closed
+      for dep in $deps; do
+        # Remove quotes if present
+        dep=$(echo "$dep" | sed 's/"//g' | sed "s/'//g")
+        dep_file="$epic_dir$dep.md"
+        if [ -f "$dep_file" ]; then
+          dep_status=$(grep "^status:" "$dep_file" | head -1 | sed 's/^status: *//')
+          # If any dependency is still open, task is not ready
+          if [ "$dep_status" = "open" ]; then
+            is_ready=false
+            break
+          fi
+        fi
+      done
+    fi
+
+    # If task is ready, show it
+    if [ "$is_ready" = "true" ]; then
       task_name=$(grep "^name:" "$task_file" | head -1 | sed 's/^name: *//')
       task_num=$(basename "$task_file" .md)
       parallel=$(grep "^parallel:" "$task_file" | head -1 | sed 's/^parallel: *//')
