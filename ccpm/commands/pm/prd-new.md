@@ -79,6 +79,37 @@ Create a comprehensive PRD with these sections:
 #### Success Criteria
 - Measurable outcomes
 - Key metrics and KPIs
+- Acceptance criteria for each user story
+
+#### Constitution Alignment
+**If `.claude/CONSTITUTION.md` exists**, include this section:
+
+- [ ] Follows architectural principles
+- [ ] Meets code quality standards
+- [ ] Aligns with approved technology stack
+- [ ] Satisfies security requirements
+- [ ] Meets performance standards
+- [ ] Follows development workflow
+
+**For each item**, briefly explain how this PRD aligns (1-2 sentences).
+
+**If constitution doesn't exist**, note: "No constitution file found. Run `/pm:constitution-create` to establish project standards."
+
+#### Executable Criteria
+For each major acceptance criterion, define how it will be verified:
+
+**Format:**
+```
+Criterion: [User can login with email and password]
+Verification Method: [Integration test]
+Test Specification:
+  - Test login form renders correctly
+  - Test successful login with valid credentials
+  - Test error handling for invalid credentials
+  - Test session persistence after login
+```
+
+This section helps ensure specs are testable and verifiable.
 
 #### Constraints & Assumptions
 - Technical limitations
@@ -128,6 +159,9 @@ Before saving the PRD, verify:
 - [ ] All sections are complete (no placeholder text)
 - [ ] User stories include acceptance criteria
 - [ ] Success criteria are measurable
+- [ ] Constitution alignment is checked (if constitution exists)
+- [ ] Executable criteria defined for major acceptance criteria
+- [ ] Test specifications are concrete and actionable
 - [ ] Dependencies are clearly identified
 - [ ] Out of scope items are explicitly listed
 

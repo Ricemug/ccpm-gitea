@@ -135,41 +135,66 @@ epic_number=$(forge_issue_create \
 echo "✅ Created epic issue #$epic_number in $REPO"
 ```
 
-### 3. Create Task Issues
+### 3. Create Task Issues (Parallel)
 
-For each task file, create a separate issue on Gitea:
+Create all task issues concurrently for faster syncing:
 
 ```bash
 # Initialize task mapping file
 > /tmp/task-mapping.txt
+> /tmp/task-creation.log
 
 # Count tasks
 task_count=$(ls .claude/epics/$ARGUMENTS/[0-9][0-9][0-9].md 2>/dev/null | wc -l)
-echo "Creating $task_count task issues..."
+echo "Creating $task_count task issues in parallel..."
 
-# Create each task as a separate issue
+# Create each task as a separate issue (in parallel)
 for task_file in .claude/epics/$ARGUMENTS/[0-9][0-9][0-9].md; do
   [ -f "$task_file" ] || continue
 
-  # Extract task name from frontmatter
-  task_name=$(grep '^name:' "$task_file" | sed 's/^name: *//')
+  # Launch task creation in background
+  (
+    # Extract task name from frontmatter
+    task_name=$(grep '^name:' "$task_file" | sed 's/^name: *//')
+    task_basename=$(basename "$task_file")
 
-  # Strip frontmatter from task content
-  sed '1,/^---$/d; 1,/^---$/d' "$task_file" > /tmp/task-body.md
+    # Strip frontmatter from task content
+    task_body_file="/tmp/task-body-${task_basename}"
+    sed '1,/^---$/d; 1,/^---$/d' "$task_file" > "$task_body_file"
 
-  # Create issue with labels
-  task_body=$(cat /tmp/task-body.md)
-  task_number=$(forge_issue_create \
-    --title "$task_name" \
-    --body "$task_body" \
-    --labels "task,epic:$ARGUMENTS" \
-    --repo "$REPO" | grep -oP '#\K[0-9]+')
+    # Create issue with labels
+    task_body=$(cat "$task_body_file")
+    task_number=$(forge_issue_create \
+      --title "$task_name" \
+      --body "$task_body" \
+      --labels "task,epic:$ARGUMENTS" \
+      --repo "$REPO" 2>&1 | grep -oP '#\K[0-9]+')
 
-  echo "  ✓ Created task #$task_number: $task_name"
+    if [ -n "$task_number" ]; then
+      # Thread-safe append to mapping file
+      (
+        flock -x 200
+        echo "$task_file:$task_number" >> /tmp/task-mapping.txt
+      ) 200>/tmp/task-mapping.lock
 
-  # Record mapping for later file renaming
-  echo "$task_file:$task_number" >> /tmp/task-mapping.txt
+      echo "  ✓ Created task #$task_number: $task_name" >> /tmp/task-creation.log
+    else
+      echo "  ✗ Failed to create task: $task_name" >> /tmp/task-creation.log
+    fi
+
+    # Cleanup temp file
+    rm -f "$task_body_file"
+  ) &
 done
+
+# Wait for all background processes to complete
+wait
+
+# Show creation log
+cat /tmp/task-creation.log | sort
+
+# Sort mapping by task file name to maintain order
+sort /tmp/task-mapping.txt -o /tmp/task-mapping.txt
 
 echo "✅ Created all task issues"
 ```
