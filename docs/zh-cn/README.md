@@ -18,11 +18,11 @@
 
 ### 使用规范驱动开发、Gitea issues、Git worktrees和并行运行的多个AI代理来交付~~更快~~_更好的_ Claude Code工作流程。
 
-**[繁體中文文檔 (Traditional Chinese)](../README-TW.md)** | **[English Documentation](../README.md)**
+**[繁體中文文檔 (Traditional Chinese)](../zh-tw/README.md)** | **[English Documentation](../../README.md)**
 
 停止丢失上下文。停止在任务上阻塞。停止交付bug。这个经过实战检验的系统将PRD转化为史诗任务，将史诗任务分解为Gitea issues，并将issues转化为生产代码——每一步都有完整的可追溯性。
 
-![Claude Code PM](screenshot.webp)
+![Claude Code PM](../../screenshot.webp)
 
 ## 目录
 

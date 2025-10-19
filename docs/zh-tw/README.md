@@ -18,11 +18,11 @@
 
 ### Claude Code 工作流程，使用規格驅動開發、Gitea Issues、Git Worktrees 和多個並行執行的 AI 代理，交付~~更快~~_更好_的成果。
 
-**[English Documentation](README.md)** | **[簡體中文文檔](zh-docs/README_ZH.md)**
+**[English Documentation](../../README.md)** | **[簡體中文文檔](../zh-cn/README.md)**
 
 停止遺失上下文。停止任務阻塞。停止交付臭蟲。這個經過實戰驗證的系統將 PRD 轉化為 Epic、Epic 分解為 Gitea Issues、Issues 轉化為生產程式碼——每一步都有完整的可追溯性。
 
-![Claude Code PM](screenshot.webp)
+![Claude Code PM](../../screenshot.webp)
 
 ## 目錄
 
