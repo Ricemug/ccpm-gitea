@@ -18,7 +18,7 @@
 
 ### Claude Code workflow to ship ~~faster~~ _better_ using spec-driven development, Gitea issues, Git worktrees, and multiple AI agents running in parallel.
 
-**[繁體中文文檔 (Traditional Chinese)](README-TW.md)** | **[简体中文文档 (Simplified Chinese)](zh-docs/README_ZH.md)**
+**[繁體中文文檔 (Traditional Chinese)](README-TW.md)** | **[簡體中文文檔 (Simplified Chinese)](zh-docs/README_ZH.md)**
 
 Stop losing context. Stop blocking on tasks. Stop shipping bugs. This battle-tested system turns PRDs into epics, epics into Gitea issues, and issues into production code – with full traceability at every step.
 
@@ -29,7 +29,7 @@ Stop losing context. Stop blocking on tasks. Stop shipping bugs. This battle-tes
 - [Background](#background)
 - [The Workflow](#the-workflow)
 - [What Makes This Different?](#what-makes-this-different)
-- [Why GitHub Issues?](#why-github-issues)
+- [Why Gitea Issues?](#why-gitea-issues)
 - [Core Principle: No Vibe Coding](#core-principle-no-vibe-coding)
 - [System Architecture](#system-architecture)
 - [Workflow Phases](#workflow-phases)
@@ -59,7 +59,7 @@ This system solves all of that.
 graph LR
     A[PRD Creation] --> B[Epic Planning]
     B --> C[Task Decomposition]
-    C --> D[GitHub Sync]
+    C --> D[Gitea Sync]
     D --> E[Parallel Execution]
 ```
 
@@ -72,7 +72,7 @@ graph LR
 # Transform PRD into a technical epic with task breakdown
 /pm:prd-parse memory-system
 
-# Push to GitHub and start parallel execution
+# Push to Gitea and start parallel execution
 /pm:epic-oneshot memory-system
 /pm:issue-start 1235
 ```
@@ -84,14 +84,14 @@ graph LR
 | Context lost between sessions | **Persistent context** across all work |
 | Serial task execution | **Parallel agents** on independent tasks |
 | "Vibe coding" from memory | **Spec-driven** with full traceability |
-| Progress hidden in branches | **Transparent audit trail** in GitHub |
+| Progress hidden in branches | **Transparent audit trail** in Gitea |
 | Manual task coordination | **Intelligent prioritization** with `/pm:next` |
 
-## Why GitHub Issues?
+## Why Gitea Issues?
 
 Most Claude Code workflows operate in isolation – a single developer working with AI in their local environment. This creates a fundamental problem: **AI-assisted development becomes a silo**.
 
-By using GitHub Issues as our database, we unlock something powerful:
+By using Gitea Issues as our database, we unlock something powerful:
 
 ### 🤝 **True Team Collaboration**
 - Multiple Claude instances can work on the same project simultaneously
@@ -109,7 +109,7 @@ By using GitHub Issues as our database, we unlock something powerful:
 - Add team members without onboarding friction
 - Multiple AI agents working in parallel on different issues
 - Distributed teams stay synchronized automatically
-- Works with existing GitHub workflows and tools
+- Works with existing Gitea workflows and tools
 
 ### 🎯 **Single Source of Truth**
 - No separate databases or project management tools
@@ -183,14 +183,14 @@ Breaks epic into concrete, actionable tasks with acceptance criteria, effort est
 
 **Output:** `.claude/epics/feature-name/[task].md`
 
-### 4. GitHub Synchronization
+### 4. Gitea Synchronization
 
 ```bash
 /pm:epic-sync feature-name
 # Or for confident workflows:
 /pm:epic-oneshot feature-name
 ```
-Pushes epic and tasks to GitHub as issues with appropriate labels and relationships.
+Pushes epic and tasks to Gitea as issues with appropriate labels and relationships.
 
 ### 5. Execution Phase
 
@@ -207,7 +207,7 @@ Specialized agents implement tasks while maintaining progress updates and an aud
 > Type `/pm:help` for a concise command summary
 
 ### Initial Setup
-- `/pm:init` - Install dependencies and configure GitHub
+- `/pm:init` - Install dependencies and configure Gitea
 
 ### PRD Commands
 - `/pm:prd-new` - Launch brainstorming for new product requirement
@@ -218,7 +218,7 @@ Specialized agents implement tasks while maintaining progress updates and an aud
 
 ### Epic Commands
 - `/pm:epic-decompose` - Break epic into task files
-- `/pm:epic-sync` - Push epic and tasks to GitHub
+- `/pm:epic-sync` - Push epic and tasks to Gitea
 - `/pm:epic-oneshot` - Decompose and sync in one command
 - `/pm:epic-list` - List all epics
 - `/pm:epic-show` - Display epic and its tasks
@@ -230,7 +230,7 @@ Specialized agents implement tasks while maintaining progress updates and an aud
 - `/pm:issue-show` - Display issue and sub-issues
 - `/pm:issue-status` - Check issue status
 - `/pm:issue-start` - Begin work with specialized agent
-- `/pm:issue-sync` - Push updates to GitHub
+- `/pm:issue-sync` - Push updates to Gitea
 - `/pm:issue-close` - Mark issue as complete
 - `/pm:issue-reopen` - Reopen closed issue
 - `/pm:issue-edit` - Edit issue details
@@ -243,8 +243,8 @@ Specialized agents implement tasks while maintaining progress updates and an aud
 - `/pm:in-progress` - List work in progress
 
 ### Sync Commands
-- `/pm:sync` - Full bidirectional sync with GitHub
-- `/pm:import` - Import existing GitHub issues
+- `/pm:sync` - Full bidirectional sync with Gitea
+- `/pm:import` - Import existing Gitea issues
 
 ### Maintenance Commands
 - `/pm:validate` - Check system integrity
@@ -297,9 +297,9 @@ We're not assigning agents to issues. We're **leveraging multiple agents** to sh
 
 Your main conversation becomes the conductor, not the orchestra.
 
-### GitHub vs Local: Perfect Separation
+### Gitea vs Local: Perfect Separation
 
-**What GitHub Sees:**
+**What Gitea Sees:**
 - Clean, simple issues
 - Progress updates
 - Completion status
@@ -309,7 +309,7 @@ Your main conversation becomes the conductor, not the orchestra.
 - Agents coordinate through Git commits
 - Complex orchestration hidden from view
 
-GitHub doesn't need to know HOW the work got done – just that it IS done.
+Gitea doesn't need to know HOW the work got done – just that it IS done.
 
 ### The Command Flow
 
@@ -336,8 +336,8 @@ Never lose project state again. Each epic maintains its own context, agents read
 ### ⚡ **Parallel Execution**
 Ship faster with multiple agents working simultaneously. Tasks marked `parallel: true` enable conflict-free concurrent development.
 
-### 🔗 **GitHub Native**
-Works with tools your team already uses. Issues are the source of truth, comments provide history, and there is no dependency on the Projects API.
+### 🔗 **Gitea Native**
+Works with tools your team already uses. Issues are the source of truth, comments provide history, and fully integrated with Gitea's workflow.
 
 ### 🤖 **Agent Specialization**
 Right tool for every job. Different agents for UI, API, and database work. Each reads requirements and posts updates automatically.
@@ -369,7 +369,7 @@ Teams using this system report:
 
 # Review the epic...
 
-# Break into tasks and push to GitHub
+# Break into tasks and push to Gitea
 /pm:epic-oneshot memory-system
 # Creates issues: #1234 (epic), #1235, #1236 (tasks)
 
@@ -377,7 +377,7 @@ Teams using this system report:
 /pm:issue-start 1235
 # Agent begins work, maintains local progress
 
-# Sync progress to GitHub
+# Sync progress to Gitea
 /pm:issue-sync 1235
 # Updates posted as issue comments
 
@@ -468,8 +468,8 @@ Watch as structured planning transforms into shipped code.
 
 ## Local vs Remote
 
-| Operation | Local | GitHub |
-|-----------|-------|--------|
+| Operation | Local | Gitea |
+|-----------|-------|-------|
 | PRD Creation | ✅ | — |
 | Implementation Planning | ✅ | — |
 | Task Breakdown | ✅ | ✅ (sync) |
@@ -479,26 +479,26 @@ Watch as structured planning transforms into shipped code.
 
 ## Technical Notes
 
-### GitHub/Gitea Integration
-- **Supports both GitHub and Gitea** - choose during `/pm:init`
-- **GitHub**: Uses **gh-sub-issue extension** for proper parent-child relationships
-  - Falls back to task lists if extension not installed
-- **Gitea**: Uses markdown task lists in epic issue body (since Gitea doesn't support sub-issues API)
+### Gitea Integration
+- **Gitea-only version** - simplified and focused on Gitea workflows
+- Uses markdown task lists in epic issue body for task tracking
   - Format: `- [ ] Task: Title #123`
-- Epic issues track sub-task completion automatically
-- Labels provide additional organization (`epic:feature`, `task:feature`)
+  - Tasks are checked off as they complete
+- Epic issues track sub-task completion automatically via task list
+- Labels provide organization (`epic:feature`, `task:feature`)
+- Full integration with Gitea's issue system and workflows
 
 ### File Naming Convention
 - Tasks start as `001.md`, `002.md` during decomposition
-- After GitHub sync, renamed to `{issue-id}.md` (e.g., `1234.md`)
+- After Gitea sync, renamed to `{issue-id}.md` (e.g., `1234.md`)
 - Makes it easy to navigate: issue #1234 = file `1234.md`
 
 ### Design Decisions
-- Intentionally avoids GitHub Projects API complexity
+- Focused exclusively on Gitea for simplicity
 - All commands operate on local files first for speed
-- Synchronization with GitHub is explicit and controlled
+- Synchronization with Gitea is explicit and controlled
 - Worktrees provide clean git isolation for parallel work
-- GitHub Projects can be added separately for visualization
+- Uses Gitea's native issue system without external dependencies
 
 ---
 
