@@ -1,23 +1,26 @@
-# Claude Code 專案管理
+# Claude Code PM - Gitea 專用版
+
+> 🔧 **Gitea 專用版本**：這是一個獨立的分支，僅支援 Gitea。
+>
+> **原始專案**：[automazeio/ccpm](https://github.com/automazeio/ccpm) 作者：[@aroussi](https://x.com/aroussi)
+> **授權條款**：MIT（與原始專案相同）
+>
+> 此版本移除了 GitHub 支援，簡化程式碼庫，專注於 Gitea 工作流程。
 
 [![Automaze](https://img.shields.io/badge/由-automaze.io-4b3baf)](https://automaze.io)
 &nbsp;
 [![Claude Code](https://img.shields.io/badge/+-Claude%20Code-d97757)](https://github.com/automazeio/ccpm/blob/main/README.md)
-[![GitHub Issues](https://img.shields.io/badge/+-GitHub%20Issues-1f2328)](https://github.com/automazeio/ccpm)
-&nbsp;
-[![Awesome Claude Code 推薦](https://awesome.re/mentioned-badge.svg)](https://github.com/hesreallyhim/awesome-claude-code?tab=readme-ov-file#general-)
+[![Gitea Issues](https://img.shields.io/badge/+-Gitea%20Issues-609926)](https://gitea.com)
 &nbsp;
 [![MIT License](https://img.shields.io/badge/授權條款-MIT-28a745)](https://github.com/automazeio/ccpm/blob/main/LICENSE)
 &nbsp;
 [![在 𝕏 上追蹤](https://img.shields.io/badge/𝕏-@aroussi-1c9bf0)](http://x.com/intent/follow?screen_name=aroussi)
-&nbsp;
-[![為此儲存庫加星](https://img.shields.io/github/stars/automazeio/ccpm.svg?style=social&label=Star%20this%20repo&maxAge=60)](https://github.com/automazeio/ccpm)
 
-### Claude Code 工作流程，使用規格驅動開發、GitHub/Gitea Issues、Git Worktrees 和多個並行執行的 AI 代理，交付~~更快~~_更好_的成果。
+### Claude Code 工作流程，使用規格驅動開發、Gitea Issues、Git Worktrees 和多個並行執行的 AI 代理，交付~~更快~~_更好_的成果。
 
-**[English Documentation](README.md)** | **[简体中文文档](zh-docs/README_ZH.md)**
+**[English Documentation](README.md)** | **[簡體中文文檔](zh-docs/README_ZH.md)**
 
-停止遺失上下文。停止任務阻塞。停止交付臭蟲。這個經過實戰驗證的系統將 PRD 轉化為 Epic、Epic 分解為 GitHub/Gitea Issues、Issues 轉化為生產程式碼——每一步都有完整的可追溯性。
+停止遺失上下文。停止任務阻塞。停止交付臭蟲。這個經過實戰驗證的系統將 PRD 轉化為 Epic、Epic 分解為 Gitea Issues、Issues 轉化為生產程式碼——每一步都有完整的可追溯性。
 
 ![Claude Code PM](screenshot.webp)
 
@@ -26,7 +29,7 @@
 - [背景](#背景)
 - [工作流程](#工作流程)
 - [與眾不同之處](#與眾不同之處)
-- [為什麼選擇 GitHub Issues？](#為什麼選擇-github-issues)
+- [為什麼選擇 Gitea Issues？](#為什麼選擇-gitea-issues)
 - [核心原則：拒絕憑感覺編碼](#核心原則拒絕憑感覺編碼)
 - [系統架構](#系統架構)
 - [工作流程階段](#工作流程階段)
@@ -56,7 +59,7 @@
 graph LR
     A[PRD 建立] --> B[Epic 規劃]
     B --> C[任務分解]
-    C --> D[GitHub/Gitea 同步]
+    C --> D[Gitea 同步]
     D --> E[並行執行]
 ```
 
@@ -69,7 +72,7 @@ graph LR
 # 將 PRD 轉化為技術 Epic 並進行任務分解
 /pm:prd-parse memory-system
 
-# 推送至 GitHub/Gitea 並開始並行執行
+# 推送至 Gitea 並開始並行執行
 /pm:epic-oneshot memory-system
 /pm:issue-start 1235
 ```
@@ -81,14 +84,14 @@ graph LR
 | 會話之間遺失上下文   | **跨所有工作的持久上下文**           |
 | 序列任務執行         | **並行代理處理獨立任務**             |
 | 從記憶中「憑感覺編碼」 | **規格驅動，全程可追溯**             |
-| 進度隱藏在分支中     | **GitHub/Gitea 中的透明稽核軌跡**    |
+| 進度隱藏在分支中     | **Gitea 中的透明稽核軌跡**           |
 | 手動任務協調         | **智慧優先順序排序，使用 `/pm:next`** |
 
-## 為什麼選擇 GitHub Issues？
+## 為什麼選擇 Gitea Issues？
 
 大多數 Claude Code 工作流程在孤立環境中運作——單一開發者在本地環境中與 AI 協作。這產生了一個根本問題：**AI 輔助開發變成了孤島**。
 
-透過使用 GitHub Issues（或 Gitea Issues）作為我們的資料庫，我們解鎖了強大的功能：
+透過使用 Gitea Issues 作為我們的資料庫，我們解鎖了強大的功能：
 
 ### 🤝 **真正的團隊協作**
 - 多個 Claude 實例可以同時處理同一專案
@@ -106,7 +109,7 @@ graph LR
 - 新增團隊成員無需繁瑣的入職流程
 - 多個 AI 代理並行處理不同 Issues
 - 分散式團隊自動保持同步
-- 與現有的 GitHub 工作流程和工具相容
+- 與現有的 Gitea 工作流程和工具相容
 
 ### 🎯 **單一真相來源**
 - 無需單獨的資料庫或專案管理工具
@@ -180,14 +183,14 @@ graph LR
 
 **輸出：** `.claude/epics/feature-name/[task].md`
 
-### 4. GitHub/Gitea 同步
+### 4. Gitea 同步
 
 ```bash
 /pm:epic-sync feature-name
 # 或對於有信心的工作流程：
 /pm:epic-oneshot feature-name
 ```
-將 Epic 和任務作為 Issues 推送到 GitHub/Gitea，帶有適當的標籤和關係。
+將 Epic 和任務作為 Issues 推送到 Gitea，帶有適當的標籤和關係。
 
 ### 5. 執行階段
 
@@ -204,7 +207,7 @@ graph LR
 > 輸入 `/pm:help` 取得簡潔的命令摘要
 
 ### 初始設定
-- `/pm:init` - 安裝相依性並設定 GitHub/Gitea
+- `/pm:init` - 安裝相依性並設定 Gitea
 
 ### PRD 命令
 - `/pm:prd-new` - 為新產品需求啟動腦力激盪
@@ -215,7 +218,7 @@ graph LR
 
 ### Epic 命令
 - `/pm:epic-decompose` - 將 Epic 分解為任務檔案
-- `/pm:epic-sync` - 將 Epic 和任務推送到 GitHub/Gitea
+- `/pm:epic-sync` - 將 Epic 和任務推送到 Gitea
 - `/pm:epic-oneshot` - 一次性分解和同步命令
 - `/pm:epic-list` - 列出所有 Epic
 - `/pm:epic-show` - 顯示 Epic 及其任務
@@ -227,7 +230,7 @@ graph LR
 - `/pm:issue-show` - 顯示 Issue 和子 Issues
 - `/pm:issue-status` - 檢查 Issue 狀態
 - `/pm:issue-start` - 開始工作並啟動專門代理
-- `/pm:issue-sync` - 將更新推送到 GitHub/Gitea
+- `/pm:issue-sync` - 將更新推送到 Gitea
 - `/pm:issue-close` - 標記 Issue 為完成
 - `/pm:issue-reopen` - 重新開啟已關閉的 Issue
 - `/pm:issue-edit` - 編輯 Issue 詳情
@@ -240,8 +243,8 @@ graph LR
 - `/pm:in-progress` - 列出進行中的工作
 
 ### 同步命令
-- `/pm:sync` - 與 GitHub/Gitea 的雙向同步
-- `/pm:import` - 匯入現有的 GitHub/Gitea Issues
+- `/pm:sync` - 與 Gitea 的雙向同步
+- `/pm:import` - 匯入現有的 Gitea Issues
 
 ### 維護命令
 - `/pm:validate` - 檢查系統完整性
@@ -294,9 +297,9 @@ graph LR
 
 你的主對話成為指揮家，而不是管弦樂團。
 
-### GitHub vs 本地：完美分離
+### Gitea vs 本地：完美分離
 
-**GitHub/Gitea 看到的內容：**
+**Gitea 看到的內容：**
 - 乾淨、簡單的 Issues
 - 進度更新
 - 完成狀態
@@ -306,7 +309,7 @@ graph LR
 - 代理透過 Git 提交進行協調
 - 複雜的編排對視圖隱藏
 
-GitHub/Gitea 無需知道工作是如何完成的——只需知道工作已完成。
+Gitea 無需知道工作是如何完成的——只需知道工作已完成。
 
 ### 命令流程
 
@@ -333,7 +336,7 @@ GitHub/Gitea 無需知道工作是如何完成的——只需知道工作已完�
 ### ⚡ **並行執行**
 透過多個代理同時工作來更快交付。標記為 `parallel: true` 的任務支援無衝突的並行開發。
 
-### 🔗 **GitHub/Gitea 原生支援**
+### 🔗 **Gitea 原生支援**
 與團隊已使用的工具相容。Issues 是真相來源，評論提供歷史，不依賴 Projects API。
 
 ### 🤖 **代理專業化**
@@ -366,7 +369,7 @@ GitHub/Gitea 無需知道工作是如何完成的——只需知道工作已完�
 
 # 審查 Epic...
 
-# 分解為任務並推送到 GitHub/Gitea
+# 分解為任務並推送到 Gitea
 /pm:epic-oneshot memory-system
 # 建立 Issues：#1234（Epic），#1235，#1236（任務）
 
@@ -374,7 +377,7 @@ GitHub/Gitea 無需知道工作是如何完成的——只需知道工作已完�
 /pm:issue-start 1235
 # 代理開始工作，在本地維護進度
 
-# 同步進度到 GitHub/Gitea
+# 同步進度到 Gitea
 /pm:issue-sync 1235
 # 更新作為 Issue 評論發布
 
@@ -427,13 +430,17 @@ GitHub/Gitea 無需知道工作是如何完成的——只需知道工作已完�
    /pm:init
    ```
    此命令將：
-   - 安裝 GitHub CLI（如需要）
-   - 與 GitHub/Gitea 進行身份驗證
-   - 讓你選擇 Forge 類型（GitHub 或 Gitea）
-   - **GitHub**：安裝 [gh-sub-issue 擴充功能](https://github.com/yahsan2/gh-sub-issue) 以建立正確的父子關係
-   - **Gitea**：使用 task list 而非 sub-issues（Gitea 本身不支援 sub-issues）
+   - 檢查並安裝 Gitea CLI（tea）（如需要）
+   - 與 Gitea 實例進行身份驗證
    - 建立所需目錄
+   - 在儲存庫中設定標籤
    - 更新 .gitignore
+
+   > 💡 **身份驗證**：您需要先設定 tea CLI：
+   > ```bash
+   > tea login add --name myserver --url https://your-gitea.com --token YOUR_TOKEN
+   > ```
+   > 從 Gitea 設定 → 應用程式 → 產生新令牌 取得您的令牌
 
 3. **建立包含儲存庫資訊的 `CLAUDE.md`**
    ```bash
@@ -458,7 +465,7 @@ GitHub/Gitea 無需知道工作是如何完成的——只需知道工作已完�
 
 ## 本地 vs 遠端
 
-| 操作       | 本地 | GitHub/Gitea |
+| 操作       | 本地 | Gitea |
 | ---------- | ---- | ------------ |
 | PRD 建立   | ✅    | —            |
 | 實作規劃   | ✅    | —            |
@@ -469,24 +476,26 @@ GitHub/Gitea 無需知道工作是如何完成的——只需知道工作已完�
 
 ## 技術說明
 
-### GitHub/Gitea 整合
-- **GitHub**：使用 **gh-sub-issue 擴充功能**建立正確的父子關係
-- **Gitea**：使用 task list 而非 sub-issues（因 Gitea 不支援 sub-issues API）
-- 如果未安裝擴充功能則回退到任務列表
-- Epic Issues 自動追蹤子任務完成情況
-- 標籤提供額外組織（`epic:feature`，`task:feature`）
+### Gitea 整合
+- **Gitea 專用版本** - 簡化並專注於 Gitea 工作流程
+- 在 Epic Issue 本文中使用 markdown 任務列表追蹤任務
+  - 格式：`- [ ] 任務：標題 #123`
+  - 任務完成時會被勾選
+- Epic Issues 透過任務列表自動追蹤子任務完成情況
+- 標籤提供組織（`epic:feature`，`task:feature`）
+- 與 Gitea 的 Issue 系統和工作流程完全整合
 
 ### 檔案命名慣例
 - 任務在分解期間以 `001.md`、`002.md` 開始
-- GitHub/Gitea 同步後，重新命名為 `{issue-id}.md`（例如，`1234.md`）
+- Gitea 同步後，重新命名為 `{issue-id}.md`（例如，`1234.md`）
 - 便於導覽：Issue #1234 = 檔案 `1234.md`
 
 ### 設計決策
-- 刻意避免 GitHub Projects API 的複雜性
+- 專注於 Gitea 以求簡化
 - 所有命令首先在本地檔案上操作以提高速度
-- 與 GitHub/Gitea 的同步是明確且受控的
+- 與 Gitea 的同步是明確且受控的
 - Worktrees 為並行工作提供乾淨的 Git 隔離
-- GitHub Projects 可以單獨新增用於視覺化
+- 使用 Gitea 的原生 Issue 系統，無需外部依賴
 
 ---
 
